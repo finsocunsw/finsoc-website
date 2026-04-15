@@ -1,0 +1,50 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getPosts, getPost, urlFor } from '../../utils/sanity';
+import { PortableText } from "astro-portabletext";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post: any) => ({
+    params: { slug: post.slug.current },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+---
+
+<Layout title={`${post.title} | FinSoc`}>
+	<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
+		<header class="mb-12 text-center">
+			<div class="flex items-center justify-center gap-2 text-sm text-blue-600 font-medium mb-4 uppercase tracking-wider">
+				{post.publishedAt && (
+					<span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+				)}
+			</div>
+			<h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight mb-8">
+				{post.title}
+			</h1>
+			{post.mainImage && (
+				<div class="aspect-[21/9] overflow-hidden rounded-3xl shadow-xl mb-12">
+					<img
+						src={urlFor(post.mainImage).width(1600).url()}
+						alt={post.title}
+						class="w-full h-full object-cover"
+					/>
+				</div>
+			)}
+		</header>
+
+		<div class="prose prose-lg prose-blue mx-auto prose-img:rounded-2xl prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed">
+			<PortableText value={post.body} />
+		</div>
+
+		<footer class="mt-20 pt-10 border-t border-gray-100 text-center">
+			<a href="/" class="text-blue-600 font-semibold inline-flex items-center gap-2 group hover:gap-3 transition-all">
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rotate-180"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+				Back to Home
+			</a>
+		</footer>
+	</article>
+</Layout>

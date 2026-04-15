@@ -12,8 +12,14 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@portabletext/react": "^6.0.3",
+    "@sanity/astro": "^3.3.1",
+    "@sanity/client": "^7.21.0",
+    "@sanity/icons": "^3.7.4",
+    "@sanity/image-url": "^2.1.1",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.1.6",
+    "astro-portabletext": "^0.13.0",
     "tailwindcss": "^4.2.2"
   }
 }

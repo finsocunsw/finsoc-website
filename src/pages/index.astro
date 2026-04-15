@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getPosts, urlFor } from '../utils/sanity';
+
+const posts = await getPosts();
 ---
 
 <Layout title="FinSoc | Financial Society">
@@ -19,6 +22,58 @@ import Layout from '../layouts/Layout.astro';
 					Learn More
 				</button>
 			</div>
+		</div>
+	</section>
+
+	<section id="posts" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-gray-100">
+		<div class="flex justify-between items-end mb-12">
+			<div>
+				<h2 class="text-3xl font-bold text-gray-900">Latest Updates</h2>
+				<p class="mt-2 text-gray-500">News, insights, and events from our community.</p>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+			{posts.length > 0 ? (
+				posts.map((post: any) => (
+					<article class="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
+						{post.mainImage && (
+							<div class="aspect-[16/9] overflow-hidden">
+								<img
+									src={urlFor(post.mainImage).width(800).url()}
+									alt={post.title}
+									class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+								/>
+							</div>
+						)}
+						<div class="p-8">
+							<div class="flex items-center gap-2 text-sm text-blue-600 font-medium mb-4 uppercase tracking-wider">
+								{post.publishedAt && (
+									<span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+								)}
+							</div>
+							<h3 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
+								<a href={`/posts/${post.slug.current}`}>
+									{post.title}
+								</a>
+							</h3>
+							<p class="text-gray-600 line-clamp-3 leading-relaxed">
+								{post.excerpt || "Read more about this post..."}
+							</p>
+							<div class="mt-8 pt-6 border-t border-gray-50">
+								<a href={`/posts/${post.slug.current}`} class="text-blue-600 font-semibold inline-flex items-center gap-2 group-hover:gap-3 transition-all">
+									Read Article
+									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+								</a>
+							</div>
+						</div>
+					</article>
+				))
+			) : (
+				<div class="col-span-full py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+					<p class="text-gray-500 text-lg">No posts found yet. Check back soon!</p>
+				</div>
+			)}
 		</div>
 	</section>
 </Layout>
