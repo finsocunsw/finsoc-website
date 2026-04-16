@@ -1,0 +1,1 @@
+This is a website for UNSW FINSOC. Tech stack: Astro (SSG), Tailwind CSS, Sanity CMS. The GitHub repo is in the UNSW-FINSOC Org.
