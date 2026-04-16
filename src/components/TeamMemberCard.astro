@@ -1,0 +1,59 @@
+---
+import { urlFor, type TeamMember } from '../utils/sanity';
+
+interface Props {
+  member: TeamMember;
+}
+
+const { member } = Astro.props;
+---
+
+<div class="group relative overflow-hidden rounded-[2rem] bg-gray-50 border border-black shadow-md transition-all duration-500 hover:shadow-2xl">
+  <div class="aspect-[4/5] w-full overflow-hidden">
+    <img
+      src={urlFor(member.image).width(600).height(750).url()}
+      alt={member.name}
+      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+    />
+  </div>
+
+  <!-- Info Overlay (Visible by default, fades out on hover) -->
+  <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-primary/90 via-brand-primary/40 to-transparent p-8 pt-20 transition-opacity duration-300 group-hover:opacity-0">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="text-brand-accent font-black text-[10px] uppercase tracking-[0.2em]">{member.role}</span>
+    </div>
+    <h3 class="text-2xl font-black text-white leading-tight">{member.name}</h3>
+  </div>
+
+  <!-- Bio/LinkedIn Overlay (Hidden by default, fades in on hover with delay) -->
+  <div class="absolute inset-0 flex flex-col justify-center bg-brand-primary/95 p-8 opacity-0 transition-opacity duration-500 delay-300 group-hover:opacity-100">
+    <div class="mb-4">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-brand-accent font-black text-[10px] uppercase tracking-[0.2em]">{member.role}</span>
+      </div>
+      <h3 class="text-2xl font-black text-white leading-tight mb-4">{member.name}</h3>
+      
+      {member.bio && (
+        <p class="text-gray-300 font-medium text-sm leading-relaxed line-clamp-6 mb-8">
+          {member.bio}
+        </p>
+      )}
+    </div>
+
+    {member.linkedin && (
+      <div class="mt-auto pt-6 border-t border-white/10">
+        <a
+          href={member.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 text-white font-black text-xs tracking-[0.1em] hover:text-brand-accent transition-colors group/link"
+        >
+          LINKEDIN PROFILE
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover/link:translate-x-1 transition-transform">
+            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    )}
+  </div>
+</div>

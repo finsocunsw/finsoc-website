@@ -1,0 +1,183 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TeamMemberCard from '../components/TeamMemberCard.astro';
+import { getTeamMembers, getTeamYears, type TeamMember } from '../utils/sanity';
+
+const currentYear = new Date().getFullYear();
+const searchParams = Astro.url.searchParams;
+const selectedYear = parseInt(searchParams.get('year') || currentYear.toString());
+
+const teamMembers = await getTeamMembers(selectedYear);
+const availableYears = await getTeamYears();
+
+// Fallback if current year has no members but we have other years
+let displayYear = selectedYear;
+let finalTeam = teamMembers;
+
+if (teamMembers.length === 0 && availableYears.length > 0) {
+  if (!searchParams.has('year')) {
+    displayYear = availableYears[0];
+    finalTeam = await getTeamMembers(displayYear);
+  }
+}
+
+// Grouping Logic
+const execs = finalTeam.filter((m: TeamMember) => m.category === 'exec');
+const directors = finalTeam.filter((m: TeamMember) => m.category === 'director');
+
+// 1. Group Execs by Rank
+const presidents = execs.filter(m => m.rank === '1_president');
+const vps = execs.filter(m => m.rank === '2_vp');
+const otherExecs = execs.filter(m => m.rank === '3_officer');
+
+// 2. Group Directors by Portfolio
+const portfolios = [...new Set(directors.map(m => m.portfolio).filter(Boolean))] as string[];
+const directorsByPortfolio = portfolios.map(portfolio => ({
+  name: portfolio,
+  members: directors.filter(m => m.portfolio === portfolio).sort((a, b) => (a.order || 99) - (b.order || 99))
+}));
+
+const sortByOrder = (a: TeamMember, b: TeamMember) => (a.order || 99) - (b.order || 99);
+presidents.sort(sortByOrder);
+vps.sort(sortByOrder);
+otherExecs.sort(sortByOrder);
+---
+
+<Layout title={`Meet the Team ${displayYear} | FinSoc`} mainClass="bg-transparent">
+  <!-- Parallax Background Image -->
+  <div class="fixed inset-0 pointer-events-none z-0 opacity-60 overflow-hidden">
+    <div 
+      id="parallax-bg"
+      class="w-full h-[120vh] bg-cover bg-center bg-no-repeat transition-transform duration-100 ease-out"
+      style="background-image: url('/unsw-mainwalkway.png');"
+    ></div>
+  </div>
+
+  <section class="pt-40 pb-32 relative overflow-hidden z-10">
+    <!-- Background Decor -->
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:64px_64px] -z-10"></div>
+
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-end gap-12 mb-32">
+        <div class="max-w-2xl text-left">
+          <h2 class="text-brand-primary font-black tracking-[0.2em] text-sm mb-6 uppercase">OUR LEADERSHIP</h2>
+          <h1 class="text-6xl md:text-8xl font-black text-brand-primary tracking-tight leading-[0.9]">
+            MEET THE <span class="text-transparent" style="-webkit-text-stroke: 2px var(--color-brand-primary)">{displayYear}</span> TEAM.
+          </h1>
+        </div>
+        
+        {availableYears.length > 1 && (
+          <div class="flex flex-wrap gap-3">
+            {availableYears.map((y: number) => (
+              <a 
+                href={`/our-team?year=${y}`}
+                class={`px-6 py-2 rounded-full font-black text-xs tracking-widest transition-all duration-300 ${y === displayYear ? 'bg-brand-primary text-white scale-110 shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-brand-primary'}`}
+              >
+                {y}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Executives Section -->
+      <div class="mb-56">
+        <div class="flex items-center gap-6 mb-24">
+           <div class="flex flex-col">
+             <h2 class="text-5xl font-black text-brand-primary tracking-tight">EXECUTIVE BOARD</h2>
+           </div>
+           <div class="h-px bg-black flex-grow mt-6"></div>
+        </div>
+
+        {/* Presidents - Highlighted layout */}
+        {presidents.length > 0 && (
+          <div class="mb-24 max-w-3xl mx-auto">
+            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center">CO-PRESIDENTS</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-12 lg:gap-16">
+              {presidents.map((member) => (
+                <TeamMemberCard member={member} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Vice Presidents */}
+        {vps.length > 0 && (
+          <div class="max-w-2xl mx-auto mb-24">
+            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center">VICE PRESIDENTS</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-10">
+              {vps.map((member) => (
+                <TeamMemberCard member={member} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Other Execs */}
+        {otherExecs.length > 0 && (
+          <div class="max-w-2xl mx-auto">
+            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center">EXECUTIVE OFFICERS</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 lg:gap-12">
+              {otherExecs.map((member) => (
+                <TeamMemberCard member={member} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {execs.length === 0 && (
+          <div class="py-20 text-center bg-gray-50 rounded-[3rem] border-4 border-dashed border-gray-100">
+            <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No executive data for {displayYear}.</p>
+          </div>
+        )}
+      </div>
+
+      <!-- Directors Section -->
+      <div class="relative">
+        <!-- Vertical divider for desktop -->
+        <div class="hidden md:block absolute left-1/2 top-40 bottom-0 w-px bg-black -translate-x-1/2"></div>
+
+        <div class="flex items-center gap-6 mb-24">
+           <div class="flex flex-col">
+             <h2 class="text-5xl font-black text-brand-primary tracking-tight">PORTFOLIO DIRECTORS</h2>
+           </div>
+           <div class="h-px bg-black flex-grow mt-6"></div>
+        </div>
+        
+        {directorsByPortfolio.length > 0 ? (
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-20 lg:gap-x-32 gap-y-32">
+            {directorsByPortfolio.map((portfolio) => (
+              <div class="space-y-12">
+                <div class="flex items-center gap-4">
+                  <h3 class="text-base font-black text-brand-primary uppercase tracking-[0.4em] whitespace-nowrap">{portfolio.name}</h3>
+                  <div class="h-px bg-black w-16"></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                  {portfolio.members.map((member) => (
+                    <TeamMemberCard member={member} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div class="py-20 text-center bg-black rounded-[3rem] border-4 border-dashed border-gray-100">
+            <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No director data for {displayYear}.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script is:inline>
+  const parallaxBg = document.getElementById('parallax-bg');
+  if (parallaxBg) {
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      // Scroll speed: 0.05x the page scroll speed
+      parallaxBg.style.transform = `translateY(${scrolled * -0.05}px)`;
+    });
+  }
+</script>

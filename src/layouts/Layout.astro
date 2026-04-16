@@ -5,9 +5,10 @@ import '../styles/global.css';
 
 interface Props {
 	title: string;
+	mainClass?: string;
 }
 
-const { title } = Astro.props;
+const { title, mainClass = "bg-white" } = Astro.props;
 ---
 
 <!doctype html>
@@ -22,7 +23,7 @@ const { title } = Astro.props;
 	</head>
 	<body class="min-h-screen flex flex-col bg-white">
 		<Navbar />
-		<main class="flex-grow">
+		<main class={`flex-grow ${mainClass}`}>
 			<slot />
 		</main>
 		<Footer />

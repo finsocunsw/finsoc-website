@@ -6,7 +6,9 @@ import {schemaTypes} from './schemaTypes'
 export default defineConfig({
   name: 'default',
   title: 'finsoc-website',
-
+  deployment: {
+    appId: 'vnx2th51d8e0rtyav5ywskap',
+  },
   projectId: '58vcqj2e',
   dataset: 'finsoc',
 
