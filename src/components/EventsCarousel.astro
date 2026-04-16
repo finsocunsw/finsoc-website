@@ -1,0 +1,115 @@
+---
+import { getEvents, urlFor } from '../utils/sanity';
+
+const events = await getEvents();
+---
+
+<section id="events" class="py-24 bg-brand-secondary overflow-hidden">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+    <div class="flex flex-col md:flex-row justify-between items-end gap-6">
+      <div class="max-w-xl">
+        <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-4">UPCOMING ACTIVITIES</h2>
+        <h3 class="text-4xl md:text-5xl font-black text-brand-primary tracking-tight">RECENT EVENTS.</h3>
+      </div>
+      <a href="/events" class="text-brand-primary font-bold border-b-2 border-brand-accent hover:text-brand-accent transition-colors pb-1">VIEW ALL CALENDAR</a>
+    </div>
+  </div>
+
+  <div class="swiper-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="swiper">
+      <div class="swiper-wrapper py-10">
+        {events.map((event: any) => (
+          <div class="swiper-slide h-auto">
+            <div class="group h-full bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col">
+              <div class="aspect-[4/3] overflow-hidden relative">
+                <div class="absolute top-4 left-4 z-20">
+                  <span class="bg-brand-primary text-brand-secondary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-brand-accent/30 shadow-lg">
+                    {event.category}
+                  </span>
+                </div>
+                {event.coverPhoto && (
+                  <img
+                    src={urlFor(event.coverPhoto).width(600).url()}
+                    alt={event.name}
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                )}
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-primary/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              </div>
+              <div class="p-8 flex flex-col flex-grow">
+                <p class="text-brand-accent font-black text-xs tracking-widest mb-3">
+                  {new Date(event.dateOfEvent).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </p>
+                <h4 class="text-2xl font-black text-brand-primary mb-4 group-hover:text-brand-accent transition-colors leading-tight">
+                  {event.name}
+                </h4>
+                <div class="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
+                  {event.fbEventLink && (
+                    <a 
+                      href={event.fbEventLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      class="text-brand-primary/70 hover:text-brand-accent font-bold text-sm inline-flex items-center gap-2 group/link"
+                    >
+                      FB Event
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover/link:translate-x-1 transition-transform"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+                    </a>
+                  )}
+                  <a href={`/events/${event.slug.current}`} class="bg-brand-primary text-brand-secondary p-3 rounded-full hover:bg-brand-accent transition-colors shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+        {events.length === 0 && (
+          <div class="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+             <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No recent events to display</p>
+          </div>
+        )}
+      </div>
+      <div class="swiper-pagination !-bottom-2"></div>
+    </div>
+  </div>
+</section>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<script>
+  import Swiper from 'swiper';
+  import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+
+  new Swiper('.swiper', {
+    modules: [Navigation, Pagination, Autoplay],
+    slidesPerView: 1,
+    spaceBetween: 30,
+    loop: true,
+    autoplay: {
+      delay: 5000,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    breakpoints: {
+      640: {
+        slidesPerView: 2,
+      },
+      1024: {
+        slidesPerView: 3,
+      },
+    },
+  });
+</script>
+
+<style>
+  .swiper-pagination-bullet-active {
+    background: #d4af37 !important;
+  }
+</style>

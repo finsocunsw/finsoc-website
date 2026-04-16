@@ -1,5 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import Sponsors from '../components/Sponsors.astro';
+import EventsCarousel from '../components/EventsCarousel.astro';
+import Testimonials from '../components/Testimonials.astro';
+import JoinSection from '../components/JoinSection.astro';
 import { getPosts, urlFor } from '../utils/sanity';
 
 export const prerender = true;
@@ -7,75 +12,70 @@ export const prerender = true;
 const posts = await getPosts();
 ---
 
-<Layout title="FinSoc | Financial Society">
-	<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-		<div class="max-w-3xl">
-			<h1 class="text-5xl md:text-7xl font-extrabold text-gray-900 tracking-tight">
-				Bridging the gap between <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent italic">finance</span> and students.
-			</h1>
-			<p class="mt-8 text-xl text-gray-500 leading-relaxed max-w-2xl">
-				Join the premier financial community on campus. We provide the tools, network, and knowledge to help you excel in your professional journey.
-			</p>
-			<div class="mt-10 flex flex-wrap gap-4">
-				<button class="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg active:scale-95">
-					Join Today
-				</button>
-				<button class="bg-white text-gray-900 border border-gray-200 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-50 transition-all active:scale-95">
-					Learn More
-				</button>
-			</div>
-		</div>
-	</section>
+<Layout title="FinSoc | The Financial Society">
+  <Hero />
+  
+  <Sponsors />
+  
+  <EventsCarousel />
 
-	<section id="posts" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-gray-100">
-		<div class="flex justify-between items-end mb-12">
-			<div>
-				<h2 class="text-3xl font-bold text-gray-900">Latest Updates</h2>
-				<p class="mt-2 text-gray-500">News, insights, and events from our community.</p>
-			</div>
-		</div>
+  <section id="updates" class="py-24 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+        <div class="max-w-xl text-left">
+          <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-4 uppercase">INSIGHTS & NEWS</h2>
+          <h3 class="text-4xl md:text-5xl font-black text-brand-primary tracking-tight">LATEST UPDATES.</h3>
+        </div>
+        <a href="/posts" class="text-brand-primary font-bold border-b-2 border-brand-accent hover:text-brand-accent transition-colors pb-1">READ ALL ARTICLES</a>
+      </div>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-			{posts.length > 0 ? (
-				posts.map((post: any) => (
-					<article class="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all hover:-translate-y-1">
-						{post.mainImage && (
-							<div class="aspect-[16/9] overflow-hidden">
-								<img
-									src={urlFor(post.mainImage).width(800).url()}
-									alt={post.title}
-									class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-								/>
-							</div>
-						)}
-						<div class="p-8">
-							<div class="flex items-center gap-2 text-sm text-blue-600 font-medium mb-4 uppercase tracking-wider">
-								{post.publishedAt && (
-									<span>{new Date(post.publishedAt).toLocaleDateString()}</span>
-								)}
-							</div>
-							<h3 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
-								<a href={`/posts/${post.slug.current}`}>
-									{post.title}
-								</a>
-							</h3>
-							<p class="text-gray-600 line-clamp-3 leading-relaxed">
-								{post.excerpt || "Read more about this post..."}
-							</p>
-							<div class="mt-8 pt-6 border-t border-gray-50">
-								<a href={`/posts/${post.slug.current}`} class="text-blue-600 font-semibold inline-flex items-center gap-2 group-hover:gap-3 transition-all">
-									Read Article
-									<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-								</a>
-							</div>
-						</div>
-					</article>
-				))
-			) : (
-				<div class="col-span-full py-20 text-center bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-					<p class="text-gray-500 text-lg">No posts found yet. Check back soon!</p>
-				</div>
-			)}
-		</div>
-	</section>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {posts.length > 0 ? (
+          posts.slice(0, 3).map((post: any) => (
+            <article class="group bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col">
+              {post.mainImage && (
+                <div class="aspect-[16/10] overflow-hidden">
+                  <img
+                    src={urlFor(post.mainImage).width(800).url()}
+                    alt={post.title}
+                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                </div>
+              )}
+              <div class="p-8 flex-grow flex flex-col">
+                <div class="flex items-center gap-3 mb-6">
+                   <span class="w-8 h-px bg-brand-accent"></span>
+                   <span class="text-brand-accent font-black text-[10px] uppercase tracking-[0.2em]">
+                     {post.publishedAt && new Date(post.publishedAt).toLocaleDateString()}
+                   </span>
+                </div>
+                <h4 class="text-2xl font-black text-brand-primary mb-4 group-hover:text-brand-accent transition-colors leading-tight">
+                  <a href={`/posts/${post.slug.current}`}>
+                    {post.title}
+                  </a>
+                </h4>
+                <p class="text-gray-500 font-medium line-clamp-3 leading-relaxed mb-8">
+                  {post.excerpt || "Read our latest perspective on industry trends and society updates."}
+                </p>
+                <div class="mt-auto pt-6 border-t border-gray-50">
+                  <a href={`/posts/${post.slug.current}`} class="text-brand-primary font-black text-sm inline-flex items-center gap-2 group/link">
+                    CONTINUE READING
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover/link:translate-x-1 transition-transform"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))
+        ) : (
+          <div class="col-span-full py-20 text-center bg-white rounded-[3rem] border-4 border-dashed border-gray-100">
+            <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No updates found yet.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <Testimonials />
+  
+  <JoinSection />
 </Layout>

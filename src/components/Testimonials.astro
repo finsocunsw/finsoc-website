@@ -1,0 +1,57 @@
+---
+const testimonials = [
+  {
+    quote: "FinSoc provided me with the network and technical skills that were pivotal in landing my internship at a top-tier investment bank.",
+    author: "James Wilson",
+    role: "Investment Banking Analyst Intern",
+    avatar: "JW"
+  },
+  {
+    quote: "The stock pitch competition was an incredible experience. It pushed me to think critically and articulate my ideas clearly.",
+    author: "Sarah Chen",
+    role: "Quantitative Research Associate",
+    avatar: "SC"
+  },
+  {
+    quote: "Beyond the professional development, I've met my closest friends through this society. It's a true community.",
+    author: "Michael Brown",
+    role: "Economics Student, Year 3",
+    avatar: "MB"
+  }
+];
+---
+
+<section id="testimonials" class="py-24 bg-brand-primary relative overflow-hidden">
+  <div class="absolute inset-0 opacity-5">
+     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border-[200px] border-brand-accent rounded-full"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="text-center mb-16">
+      <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-4 uppercase">TESTIMONIALS</h2>
+      <h3 class="text-4xl md:text-5xl font-black text-brand-secondary">HEAR FROM OUR MEMBERS.</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+      {testimonials.map((t) => (
+        <div class="bg-brand-secondary/5 backdrop-blur-sm p-10 rounded-[2.5rem] border border-brand-secondary/10 flex flex-col hover:bg-brand-secondary/10 transition-colors group">
+          <div class="mb-8">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-accent opacity-50 group-hover:opacity-100 transition-opacity"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 2.5 1 4.066 2 5V21Z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h1.5c0 1.25 0 1 0 1v1c0 2.5 1 4.066 2 5V21Z"/></svg>
+          </div>
+          <p class="text-xl text-gray-300 font-medium italic leading-relaxed mb-10 flex-grow">
+            "{t.quote}"
+          </p>
+          <div class="flex items-center gap-5 mt-auto">
+            <div class="w-14 h-14 bg-brand-accent rounded-2xl flex items-center justify-center font-black text-brand-primary text-xl shadow-lg shadow-brand-accent/20">
+              {t.avatar}
+            </div>
+            <div>
+              <p class="text-brand-secondary font-black text-lg tracking-tight">{t.author}</p>
+              <p class="text-brand-accent text-sm font-bold uppercase tracking-widest">{t.role}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

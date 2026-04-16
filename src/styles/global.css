@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #0a192f; /* Navy */
+  --color-brand-secondary: #ffffff; /* White */
+  --color-brand-accent: #90D5FF; /* Gold */
+  
+  /* Map them to more semantic names if needed */
+  --color-primary: var(--color-brand-primary);
+  --color-secondary: var(--color-brand-secondary);
+  --color-accent: var(--color-brand-accent);
+}
+
+@layer base {
+  body {
+    @apply bg-brand-secondary text-brand-primary;
+  }
+}

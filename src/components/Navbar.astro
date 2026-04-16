@@ -1,36 +1,42 @@
 ---
 const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '#about', label: 'About' },
-  { href: '#services', label: 'Services' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/our-team', label: 'Our Team' },
+  { href: '/events', label: 'Events' },
+  { href: '/affiliations', label: 'Affiliations' },
+  { href: '/publications', label: 'Publications' },
+  { href: '/jobs', label: 'Jobs' },
 ];
 ---
 
-<nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
+<nav class="bg-brand-secondary border-b border-gray-100 sticky top-0 z-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between h-16">
+    <div class="flex justify-between h-20">
       <div class="flex items-center">
-        <a href="/" class="flex-shrink-0 flex items-center">
-          <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            FinSoc
-          </span>
+        <a href="/" class="flex items-center gap-2 group">
+          <img 
+            src="/logo.png" 
+            alt="FINSOC logo" 
+            class="h-12 w-auto object-contain"
+          />
         </a>
       </div>
 
       <!-- Desktop Menu -->
-      <div class="hidden md:flex items-center space-x-8">
+      <div class="hidden md:flex items-center space-x-6">
         {navLinks.map((link) => (
           <a
             href={link.href}
-            class="text-gray-600 hover:text-blue-600 px-3 py-2 text-sm font-medium transition-colors"
+            class="text-gray-600 hover:text-brand-accent px-2 py-2 text-sm font-semibold transition-colors uppercase tracking-wider"
           >
             {link.label}
           </a>
         ))}
-        <button class="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
-          Join Us
-        </button>
+        <a 
+          href="/join-us"
+          class="bg-brand-primary text-brand-secondary px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-brand-accent hover:text-brand-primary transition-all shadow-md active:scale-95"
+        >
+          JOIN NOW
+        </a>
       </div>
 
       <!-- Mobile Menu Button -->
@@ -38,16 +44,13 @@ const navLinks = [
         <button
           id="mobile-menu-button"
           type="button"
-          class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none"
+          class="inline-flex items-center justify-center p-2 rounded-md text-brand-primary hover:text-brand-accent focus:outline-none"
           aria-controls="mobile-menu"
           aria-expanded="false"
         >
           <span class="sr-only">Open main menu</span>
-          <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <svg class="block h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-          <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
@@ -56,19 +59,22 @@ const navLinks = [
 
   <!-- Mobile Menu -->
   <div class="md:hidden hidden" id="mobile-menu">
-    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-50">
+    <div class="px-4 pt-2 pb-6 space-y-2 bg-brand-secondary border-t border-gray-100 shadow-xl">
       {navLinks.map((link) => (
         <a
           href={link.href}
-          class="text-gray-600 hover:text-blue-600 block px-3 py-2 text-base font-medium rounded-md"
+          class="text-brand-primary hover:text-brand-accent block px-3 py-4 text-lg font-bold border-b border-gray-50 last:border-0"
         >
           {link.label}
         </a>
       ))}
-      <div class="pt-4 pb-3">
-        <button class="w-full bg-blue-600 text-white px-5 py-3 rounded-xl text-base font-medium hover:bg-blue-700 transition-colors shadow-sm">
-          Join Us
-        </button>
+      <div class="pt-6">
+        <a 
+          href="/join-us"
+          class="block w-full text-center bg-brand-primary text-brand-secondary px-6 py-4 rounded-xl text-lg font-bold"
+        >
+          JOIN FINOC
+        </a>
       </div>
     </div>
   </div>
@@ -82,10 +88,5 @@ const navLinks = [
     const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
     mobileMenuButton.setAttribute('aria-expanded', String(!isExpanded));
     mobileMenu?.classList.toggle('hidden');
-    
-    // Toggle the SVG icons
-    const svgs = mobileMenuButton.querySelectorAll('svg');
-    svgs.forEach(svg => svg.classList.toggle('hidden'));
-    svgs.forEach(svg => svg.classList.toggle('block'));
   });
 </script>
