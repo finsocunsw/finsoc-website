@@ -20,12 +20,12 @@ const latestPublication = await getLatestPublication();
   
   <EventsCarousel />
 
-  <section id="latest-publication" class="py-24 bg-gray-50 overflow-hidden">
+  <section id="latest-publication" class="py-16 md:py-24 bg-gray-50 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 md:mb-16">
         <div class="max-w-xl text-left">
           <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-4 uppercase">OUR LATEST ISSUE</h2>
-          <h3 class="text-4xl md:text-5xl font-black text-brand-primary tracking-tight">PUBLICATIONS.</h3>
+          <h3 class="text-3xl md:text-5xl font-black text-brand-primary tracking-tight">PUBLICATIONS.</h3>
         </div>
         <a href="/publications" class="text-brand-primary font-bold border-b-2 border-brand-accent hover:text-brand-accent transition-colors pb-1 uppercase tracking-wider text-sm">VIEW ALL PUBLICATIONS</a>
       </div>

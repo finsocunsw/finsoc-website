@@ -41,12 +41,11 @@ const navLinks = [
           <!-- Mobile menu button -->
           <div class="md:hidden flex items-center">
           <button
-          id="mobile-menu-button"
-          class="inline-flex items-center justify-center p-2 rounded-[0.5rem] text-brand-primary hover:text-brand-accent focus:outline-none"
+            id="mobile-menu-button"
+            class="inline-flex items-center justify-center p-2 rounded-[0.5rem] text-brand-primary hover:text-brand-accent focus:outline-none"
+            aria-controls="mobile-menu"
+            aria-expanded="false"
           >
-          aria-controls="mobile-menu"
-          aria-expanded="false"
-        >
           <span class="sr-only">Open main menu</span>
           <svg class="block h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -58,19 +57,19 @@ const navLinks = [
 
   <!-- Mobile Menu -->
   <div class="md:hidden hidden" id="mobile-menu">
-    <div class="px-4 pt-2 pb-6 space-y-2 bg-brand-secondary border-t border-gray-100 shadow-xl">
+    <div class="px-4 pt-2 pb-6 space-y-1 bg-brand-secondary border-t border-gray-100 shadow-xl">
       {navLinks.map((link) => (
         <a
           href={link.href}
-          class="text-brand-primary hover:text-brand-accent block px-3 py-4 text-lg font-bold border-b border-gray-50 last:border-0"
+          class="text-brand-primary hover:text-brand-accent block px-3 py-4 text-base font-bold border-b border-gray-50 last:border-0 uppercase tracking-widest"
         >
           {link.label}
         </a>
       ))}
-      <div class="pt-6">
+      <div class="pt-4">
         <a 
-          href="/join-us"
-          class="block w-full text-center bg-brand-primary text-brand-secondary px-6 py-4 rounded-[0.5rem] text-lg font-bold"
+          href="https://campus.hellorubric.com/?tab=memberships&s=12537"
+          class="block w-full text-center bg-brand-primary text-brand-secondary px-6 py-4 rounded-[0.5rem] text-base font-bold uppercase tracking-widest"
           >
           JOIN NOW
           </a>

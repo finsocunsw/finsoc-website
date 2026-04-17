@@ -18,9 +18,9 @@ const eventSections = [
 ].filter(section => section.events.length > 0);
 ---
 
-<section id="events" class="py-24 bg-brand-secondary overflow-hidden">
+<section id="events" class="py-16 md:py-24 bg-brand-secondary overflow-hidden">
   {eventSections.map((section, idx) => (
-    <div class={idx > 0 ? "mt-24" : ""}>
+    <div class={idx > 0 ? "mt-16 md:mt-24" : ""}>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
         <div class="flex flex-col md:flex-row justify-between items-end gap-6">
           <div class="max-w-xl">

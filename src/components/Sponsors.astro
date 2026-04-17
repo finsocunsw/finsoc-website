@@ -18,7 +18,7 @@ const duplicatedSponsors = [...sponsors, ...sponsors];
   <div class="relative flex overflow-x-hidden">
     <div class="py-12 animate-marquee flex items-center whitespace-nowrap">
       {duplicatedSponsors.map((sponsor: any) => (
-        <div class="mx-8 md:mx-16 flex-shrink-0">
+        <div class="mx-6 md:mx-16 flex-shrink-0">
           {sponsor.logo ? (
             <img
               src={urlFor(sponsor.logo).height(80).url()}
@@ -35,7 +35,7 @@ const duplicatedSponsors = [...sponsors, ...sponsors];
     <!-- Second set of logos for the seamless loop -->
     <div class="absolute top-0 py-12 animate-marquee2 flex items-center whitespace-nowrap">
       {duplicatedSponsors.map((sponsor: any) => (
-        <div class="mx-8 md:mx-16 flex-shrink-0">
+        <div class="mx-6 md:mx-16 flex-shrink-0">
           {sponsor.logo ? (
             <img
               src={urlFor(sponsor.logo).height(80).url()}
