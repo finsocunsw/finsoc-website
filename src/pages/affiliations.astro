@@ -1,0 +1,157 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getSponsors, urlFor } from '../utils/sanity';
+
+const sponsors = await getSponsors();
+const tiers = ['platinum', 'gold', 'silver', 'bronze'];
+
+const sponsorsByTier = tiers.reduce((acc, tier) => {
+  acc[tier] = sponsors.filter((s: any) => s.sponsorTier === tier);
+  return acc;
+}, {} as Record<string, any[]>);
+
+const hasSponsors = sponsors.length > 0;
+---
+
+<Layout title="Affiliations | FINSOC" mainClass="bg-transparent">
+  <!-- Parallax Background Image -->
+  <div class="fixed inset-0 pointer-events-none z-0 opacity-90 blur-[4px] overflow-hidden">
+    <div 
+      id="parallax-bg"
+      class="w-full h-[130vh] bg-cover bg-center bg-repeat transition-transform duration-100 ease-out"
+      style="background-image: url('./public/sponsors.jpg');"
+    ></div>
+  </div>
+
+  <section class="pt-40 pb-32 relative overflow-hidden z-10">
+    <!-- Background Decor -->
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:64px_64px] -z-10"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-end gap-12 mb-32">
+        <div class="max-w-2xl text-left">
+          <h2 class="text-brand-primary font-black tracking-[0.2em] text-sm mb-6 uppercase">OUR PARTNERS</h2>
+          <h1 class="text-6xl md:text-8xl font-black text-brand-primary tracking-tight leading-[0.9]" >
+            VALUED <span class="text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">AFFILIATIONS.</span>
+          </h1>
+        </div>
+      </div>
+
+      {hasSponsors ? (
+        <div class="space-y-32">
+          {tiers.map((tier) => sponsorsByTier[tier]?.length > 0 && (
+            <div class="tier-section">
+              <div class="flex items-center gap-6 mb-16">
+                <h2 class="text-4xl font-black text-brand-primary uppercase tracking-tight">
+                   <span class="text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">{tier} PARTNERS.</span>
+                </h2>
+                <div class="h-px bg-black flex-grow mt-2"></div>
+              </div>
+              
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
+                {sponsorsByTier[tier].map((sponsor: any) => (
+                  <div class="group bg-white p-8 rounded-[0.5rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex items-center justify-center min-h-[160px] relative overflow-hidden">
+                    <div class="absolute inset-0 bg-brand-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    {sponsor.logo ? (
+                      <img
+                        src={urlFor(sponsor.logo).width(400).url()}
+                        alt={sponsor.name}
+                        class="max-h-16 md:max-h-20 w-auto object-contain transition-all duration-500 relative z-10"
+                      />
+                    ) : (
+                      <span class="text-2xl font-black text-brand-primary relative z-10">{sponsor.name}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="text-center py-32 bg-white rounded-[0.5rem] border-4 border-dashed border-gray-100">
+          <p class="text-gray-400 font-bold uppercase tracking-widest">Our partners for this year are being finalized.</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Contact / Call to Action -->
+  <section class="py-32 relative overflow-hidden z-10">
+    <div class="absolute inset-0  -z-10"></div>
+    <div class="absolute top-0 right-0 w-1/3 h-full bg-brand-accent/10 skew-x-12 translate-x-1/2"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-16 items-center">
+        <div>
+          <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-6 uppercase" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">PARTNER WITH US</h2>
+          <h3 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-8" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">
+            WANT TO <span class="text-brand-accent">CONNECT</span> WITH TOP TALENT?
+          </h3>
+          <div class="flex flex-wrap gap-4" style="shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">
+            <a 
+              href="mailto:sponsorships@unswfinsoc.org" 
+              class="bg-brand-accent text-brand-primary px-8 py-4 rounded-[0.5rem] font-black text-lg hover:bg-white transition-all shadow-lg active:scale-95 flex items-center gap-3"
+            >
+              Contact Sponsorships
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        <div class="relative group">
+          <div class="absolute -inset-4 bg-brand-accent/20 rounded-[0.5rem] blur-2xl group-hover:bg-brand-accent/30 transition-all duration-700"></div>
+          <div class="relative bg-white/5 backdrop-blur-xl border border-white/10 p-12 rounded-[0.5rem]">
+            <div class="space-y-8">
+              <div class="flex items-start gap-6">
+                <div class="w-12 h-12 bg-brand-accent rounded-[0.5rem] flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-white font-black text-xl mb-2">5,000+ Members</h4>
+                  <p class="text-brand-primary font-medium">Connect with a diverse pool of students across UNSW faculties.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-6">
+                <div class="w-12 h-12 bg-brand-accent rounded-[0.5rem] flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-white font-black text-xl mb-2">10+ Events Annually</h4>
+                  <p class="text-brand-primary font-medium">From corporate networking to technical workshops and social galas.</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-6">
+                <div class="w-12 h-12 bg-brand-accent rounded-[0.5rem] flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-white font-black text-xl mb-2">Industry Integration</h4>
+                  <p class="text-brand-primary font-medium">Direct line to future leaders in Investment Banking, PE, and Quant.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script is:inline>
+  const parallaxBg = document.getElementById('parallax-bg');
+  if (parallaxBg) {
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      // Scroll speed: 0.05x the page scroll speed
+      parallaxBg.style.transform = `translateY(${scrolled * -0.05}px)`;
+    });
+  }
+</script>

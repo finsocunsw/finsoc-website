@@ -28,7 +28,7 @@ const { post } = Astro.props;
 				{post.title}
 			</h1>
 			{post.mainImage && (
-				<div class="aspect-[21/9] overflow-hidden rounded-3xl shadow-xl mb-12">
+				<div class="aspect-[21/9] overflow-hidden rounded-[0.5rem] shadow-xl mb-12">
 					<img
 						src={urlFor(post.mainImage).width(1600).url()}
 						alt={post.title}
@@ -38,7 +38,7 @@ const { post } = Astro.props;
 			)}
 		</header>
 
-		<div class="prose prose-lg prose-blue mx-auto prose-img:rounded-2xl prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed">
+		<div class="prose prose-lg prose-blue mx-auto prose-img:rounded-[0.5rem] prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed">
 			<PortableText value={post.body} />
 		</div>
 

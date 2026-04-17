@@ -3,7 +3,17 @@
 @theme {
   --color-brand-primary: #0a192f; /* Navy */
   --color-brand-secondary: #ffffff; /* White */
-  --color-brand-accent: #90D5FF; /* Gold */
+  --color-brand-accent: #90D5FF; /* Gold? actually sky blue */
+  
+  /* AFR Specific Palette */
+  --color-afr-cream: #fcf9f2;
+  --color-afr-black: #111111;
+  --color-afr-red: #c20000;
+  --color-afr-border: #e2e1dc;
+
+  /* Fonts */
+  --font-serif: "Playfair Display", "Merriweather", serif;
+  --font-sans: "Inter", system-ui, sans-serif;
   
   /* Map them to more semantic names if needed */
   --color-primary: var(--color-brand-primary);
@@ -13,6 +23,6 @@
 
 @layer base {
   body {
-    @apply bg-brand-secondary text-brand-primary;
+    @apply bg-brand-secondary text-brand-primary font-sans;
   }
 }

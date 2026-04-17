@@ -61,9 +61,9 @@ otherExecs.sort(sortByOrder);
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col md:flex-row justify-between items-end gap-12 mb-32">
         <div class="max-w-2xl text-left">
-          <h2 class="text-brand-primary font-black tracking-[0.2em] text-sm mb-6 uppercase">OUR LEADERSHIP</h2>
-          <h1 class="text-6xl md:text-8xl font-black text-brand-primary tracking-tight leading-[0.9]">
-            MEET THE <span class="text-white" style="-webkit-text-stroke: 2px var(--color-brand-primary)">{displayYear}</span> TEAM.
+          <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-6 uppercase" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">OUR LEADERSHIP</h2>
+          <h1 class="text-6xl md:text-8xl font-black text-white tracking-tight leading-[0.9]" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">
+            MEET THE <span class="text-white">{displayYear}</span> TEAM.
           </h1>
         </div>
         
@@ -72,7 +72,7 @@ otherExecs.sort(sortByOrder);
             {availableYears.map((y: number) => (
               <a 
                 href={`/our-team?year=${y}`}
-                class={`px-6 py-2 rounded-full font-black text-xs tracking-widest transition-all duration-300 ${y === displayYear ? 'bg-brand-primary text-white scale-110 shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-brand-primary'}`}
+                class={`px-6 py-2 rounded-[0.5rem] font-black text-xs tracking-widest transition-all duration-300 ${y === displayYear ? 'bg-brand-primary text-white scale-110 shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-brand-primary'}`}
               >
                 {y}
               </a>
@@ -85,7 +85,7 @@ otherExecs.sort(sortByOrder);
       <div class="mb-56">
         <div class="flex items-center gap-6 mb-24">
            <div class="flex flex-col">
-             <h2 class="text-5xl font-black text-brand-primary tracking-tight">EXECUTIVE BOARD</h2>
+             <h2 class="text-5xl font-black text-brand-accent tracking-tight" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">EXECUTIVE BOARD</h2>
            </div>
            <div class="h-px bg-black flex-grow mt-6"></div>
         </div>
@@ -93,7 +93,7 @@ otherExecs.sort(sortByOrder);
         {/* Presidents - Highlighted layout */}
         {presidents.length > 0 && (
           <div class="mb-24 max-w-3xl mx-auto">
-            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center">CO-PRESIDENTS</h3>
+            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center" >CO-PRESIDENTS</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-12 lg:gap-16">
               {presidents.map((member) => (
                 <TeamMemberCard member={member} />
@@ -127,7 +127,7 @@ otherExecs.sort(sortByOrder);
         )}
 
         {execs.length === 0 && (
-          <div class="py-20 text-center bg-gray-50 rounded-[3rem] border-4 border-dashed border-gray-100">
+          <div class="py-20 text-center bg-gray-50 rounded-[0.5rem] border-4 border-dashed border-gray-100">
             <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No executive data for {displayYear}.</p>
           </div>
         )}
@@ -140,7 +140,7 @@ otherExecs.sort(sortByOrder);
 
         <div class="flex items-center gap-6 mb-24">
            <div class="flex flex-col">
-             <h2 class="text-5xl font-black text-brand-primary tracking-tight">PORTFOLIO DIRECTORS</h2>
+             <h2 class="text-5xl font-black text-brand-accent tracking-tight" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">PORTFOLIO DIRECTORS</h2>
            </div>
            <div class="h-px bg-black flex-grow mt-6"></div>
         </div>
@@ -162,7 +162,7 @@ otherExecs.sort(sortByOrder);
             ))}
           </div>
         ) : (
-          <div class="py-20 text-center bg-black rounded-[3rem] border-4 border-dashed border-gray-100">
+          <div class="py-20 text-center bg-black rounded-[0.5rem] border-4 border-dashed border-gray-100">
             <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No director data for {displayYear}.</p>
           </div>
         )}

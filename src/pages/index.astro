@@ -35,7 +35,7 @@ const latestPublication = await getLatestPublication();
           <PublicationSlideshow slides={latestPublication.slides} title={latestPublication.title} />
         </div>
       ) : (
-        <div class="py-20 text-center bg-white rounded-[3rem] border-4 border-dashed border-gray-100">
+        <div class="py-20 text-center bg-white rounded-[0.5rem] border-4 border-dashed border-gray-100">
           <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No publications found yet.</p>
         </div>
       )}

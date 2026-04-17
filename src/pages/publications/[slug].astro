@@ -16,28 +16,62 @@ const publication = await getPublication(slug!);
 if (!publication) {
   return Astro.redirect('/404');
 }
+
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('en-AU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+};
 ---
 
-<Layout title={`${publication.title} | Publications`}>
-  <main class="pt-32 pb-24 bg-gray-50">
+<Layout title={`${publication.title} | FINSOC Review`}>
+  <main class="pt-12 pb-24 afr-theme">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="max-w-4xl mx-auto text-center mb-16">
-        <a href="/publications" class="inline-flex items-center gap-2 text-brand-accent font-black text-[10px] uppercase tracking-[0.2em] mb-8 hover:gap-3 transition-all group">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-1 transition-transform"><path d="m15 18-6-6 6-6"/></svg>
-          BACK TO ARCHIVE
+
+      
+      <!-- Back Link -->
+      <div class="mb-12 border-b border-afr-border pb-4">
+        <a href="/publications" class="inline-flex items-center gap-2 font-sans font-black text-[10px] uppercase tracking-[0.2em] text-afr-red hover:gap-3 transition-all">
+          ← BACK TO ARCHIVE
         </a>
-        <h1 class="text-4xl md:text-6xl font-black text-brand-primary tracking-tight mb-6 leading-tight">{publication.title}</h1>
-        <div class="flex items-center justify-center gap-4 mb-8">
-           <span class="text-gray-400 font-bold uppercase tracking-widest text-xs">Published {new Date(publication.publishedAt).toLocaleDateString()}</span>
-           <span class="w-1.5 h-1.5 rounded-full bg-brand-accent"></span>
-           <span class="text-gray-400 font-bold uppercase tracking-widest text-xs">{publication.slides.length} Pages</span>
-        </div>
-        <p class="text-xl text-gray-500 font-medium leading-relaxed max-w-2xl mx-auto">
-          {publication.excerpt}
-        </p>
       </div>
 
-      <PublicationSlideshow slides={publication.slides} title={publication.title} />
+      <!-- Article Header -->
+      <div class="max-w-4xl mx-auto mb-16">
+        <div class="space-y-6">
+          <div class="flex items-center gap-3 font-sans text-xs font-black uppercase tracking-[0.2em] text-afr-red">
+            <span>FINSOC WEEKLY WRAPS</span>
+            <span class="w-1 h-1 bg-afr-border rounded-full"></span>
+            <span class="text-afr-black/60">{formatDate(publication.publishedAt)}</span>
+          </div>
+          
+          <h1 class="text-5xl md:text-7xl font-black leading-tight tracking-tighter">
+            {publication.title}
+          </h1>
+          
+          <div class="flex items-center gap-4 py-6 border-y border-afr-border font-sans text-[10px] font-black uppercase tracking-widest">
+            <span class="text-afr-red">SPECIAL REPORT</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-afr-border"></span>
+            <span>{publication.slides.length} PAGES</span>
+          </div>
+
+          <p class="text-2xl md:text-3xl text-gray-700 leading-relaxed italic font-normal">
+            {publication.excerpt}
+          </p>
+        </div>
+      </div>
+
+      <!-- Slideshow Area -->
+      <div class="relative bg-white/50 py-12 px-4 rounded-xl border border-afr-border shadow-inner">
+        <PublicationSlideshow slides={publication.slides} title={publication.title} />
+      </div>
+
+      <!-- Footer-like Section -->
+      <div class="mt-24 border-t-2 border-afr-black pt-12 text-center">
+        <p class="font-sans text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">End of Report</p>
+      </div>
     </div>
   </main>
 </Layout>
