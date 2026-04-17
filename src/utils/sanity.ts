@@ -22,6 +22,15 @@ export interface TeamMember {
   order?: number;
 }
 
+export interface Publication {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  publishedAt: string;
+  excerpt?: string;
+  slides: any[];
+}
+
 export async function getPosts() {
   const POSTS_QUERY = defineQuery(`*[_type == "post" && defined(slug.current)] | order(publishedAt desc)`);
   return await sanityClient.fetch(POSTS_QUERY);
@@ -30,6 +39,21 @@ export async function getPosts() {
 export async function getPost(slug: string) {
   const POST_QUERY = defineQuery(`*[_type == "post" && slug.current == $slug][0]`);
   return await sanityClient.fetch(POST_QUERY, { slug });
+}
+
+export async function getPublications() {
+  const PUBLICATIONS_QUERY = defineQuery(`*[_type == "publication" && defined(slug.current)] | order(publishedAt desc)`);
+  return await sanityClient.fetch(PUBLICATIONS_QUERY);
+}
+
+export async function getLatestPublication() {
+  const PUBLICATION_QUERY = defineQuery(`*[_type == "publication" && defined(slug.current)] | order(publishedAt desc)[0]`);
+  return await sanityClient.fetch(PUBLICATION_QUERY);
+}
+
+export async function getPublication(slug: string) {
+  const PUBLICATION_QUERY = defineQuery(`*[_type == "publication" && slug.current == $slug][0]`);
+  return await sanityClient.fetch(PUBLICATION_QUERY, { slug });
 }
 
 export async function getSponsors() {
