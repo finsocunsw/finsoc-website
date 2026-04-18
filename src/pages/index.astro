@@ -8,8 +8,6 @@ import JoinSection from '../components/JoinSection.astro';
 import PublicationSlideshow from '../components/PublicationSlideshow.astro';
 import { urlFor, getLatestPublication } from '../utils/sanity';
 
-export const prerender = true;
-
 const latestPublication = await getLatestPublication();
 ---
 
