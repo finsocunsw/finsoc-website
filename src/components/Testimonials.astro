@@ -1,16 +1,20 @@
 ---
+import { Image } from 'astro:assets';
+import arianaImg from '../assets/testimonial-ariana.png';
+import justinImg from '../assets/testimonial-justin.png';
+
 const testimonials = [
   {
     quote: "What I appreciated the most about the sponsorships subcommittee was the opportunity to make meaningful and long-lasting friendships. With my FINSOC friends, we've been hitting up different food spots in Sydney, planning classes together and making amazing memories through road trips and fun FINSOC events.",
     author: "Ariana Lai",
     role: "Sponsorships Subcommittee 2022",
-    image: "/testimonial-ariana.png"
+    image: arianaImg
   },
   {
     quote: "Joining FINSOC publications helped fulfil university life and connected me with like-minded students, many who I call my closest friends. Being part of the society, gave me industry experience without needing to have my foot in the door, which is why joining FINSOC subcommittee is something that I certainly recommend!",
     author: "Justin Nelson",
     role: "Publications Subcommittee 2022",
-    image: "/testimonial-justin.png"
+    image: justinImg
   },
 ];
 ---
@@ -37,7 +41,7 @@ const testimonials = [
           </p>
           <div class="flex items-center gap-5 mt-auto">
             <div class="w-14 h-14 bg-brand-accent rounded-[0.5rem] overflow-hidden shadow-lg shadow-brand-accent/20">
-              <img src={t.image} alt={t.author} class="w-full h-full object-cover" />
+              <Image src={t.image} alt={t.author} class="w-full h-full object-cover" />
             </div>
             <div>
               <p class="text-brand-secondary font-black text-lg tracking-tight">{t.author}</p>

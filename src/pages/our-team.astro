@@ -2,6 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 import TeamMemberCard from '../components/TeamMemberCard.astro';
 import { getTeamMembers, getTeamYears, type TeamMember } from '../utils/sanity';
+import { getImage } from 'astro:assets';
+import bgImage from '../assets/unsw-mainwalkway.png';
+
+const optimizedBg = await getImage({ src: bgImage, format: 'webp' });
 
 const currentYear = new Date().getFullYear();
 const searchParams = Astro.url.searchParams;
@@ -48,8 +52,8 @@ otherExecs.sort(sortByOrder);
   <div class="fixed inset-0 pointer-events-none z-0 blur-[4px] overflow-hidden">
     <div 
       id="parallax-bg"
-      class="w-full h-[130vh] bg-cover bg-center bg-repeat transition-transform duration-100 ease-out"
-      style="background-image: url('/unsw-mainwalkway.png');"
+      class="w-full h-[130vh] bg-cover bg-center bg-repeat transition-transform duration-100 ease-out parallax-optimized"
+      style={`background-image: url('${optimizedBg.src}');`}
     ></div>
   </div>
 
@@ -172,12 +176,29 @@ otherExecs.sort(sortByOrder);
 </Layout>
 
 <script is:inline>
-  const parallaxBg = document.getElementById('parallax-bg');
-  if (parallaxBg) {
-    window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY;
+  function initParallax() {
+    const parallaxBg = document.getElementById('parallax-bg');
+    if (!parallaxBg) return;
+
+    let ticking = false;
+    let scrollY = 0;
+
+    function updateParallax() {
       // Scroll speed: 0.05x the page scroll speed
-      parallaxBg.style.transform = `translateY(${scrolled * -0.05}px)`;
-    });
+      parallaxBg.style.transform = `translate3d(0, ${scrollY * -0.05}px, 0)`;
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      scrollY = window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    }, { passive: true });
   }
+
+  // Run on load and after swaps
+  initParallax();
+  document.addEventListener('astro:page-load', initParallax);
 </script>

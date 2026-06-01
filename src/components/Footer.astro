@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import finsocLogo from '../assets/logo.png';
 const year = new Date().getFullYear();
 ---
 
@@ -11,11 +13,13 @@ const year = new Date().getFullYear();
     <div class="grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8">
       <div class="col-span-1 md:col-span-2">
         <div class="flex items-center gap-2 mb-8 group">
-          <img 
-            src="/logo.png" 
-            alt="FINSOC logo" 
-            class="h-12 w-auto object-contain"
-          />
+        <Image 
+          src={finsocLogo} 
+          alt="FINSOC Logo" 
+          class="w-full h-full object-cover"
+          loading="eager"
+          fetchpriority="high"
+        />
         </div>
         <div class="mt-10 flex items-center gap-6">
           <a href="https://www.linkedin.com/company/unsw-finsoc" class="w-12 h-12 rounded-[0.5rem] bg-brand-secondary/5 flex items-center justify-center hover:bg-brand-accent hover:text-brand-primary transition-all group">

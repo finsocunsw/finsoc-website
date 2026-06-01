@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import { getPosts, getPost, urlFor } from '../../utils/sanity';
 import { PortableText } from "astro-portabletext";
@@ -29,9 +30,11 @@ const { post } = Astro.props;
 			</h1>
 			{post.mainImage && (
 				<div class="aspect-[21/9] overflow-hidden rounded-[0.5rem] shadow-xl mb-12">
-					<img
+					<Image
 						src={urlFor(post.mainImage).width(1600).url()}
 						alt={post.title}
+						width={1600}
+						height={685}
 						class="w-full h-full object-cover"
 					/>
 				</div>

@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { getSponsors, urlFor } from '../utils/sanity';
 
 const sponsors = await getSponsors();
@@ -20,9 +21,11 @@ const duplicatedSponsors = [...sponsors, ...sponsors];
       {duplicatedSponsors.map((sponsor: any) => (
         <div class="mx-6 md:mx-16 flex-shrink-0">
           {sponsor.logo ? (
-            <img
+            <Image
               src={urlFor(sponsor.logo).height(80).url()}
               alt={sponsor.name}
+              height={80}
+              width={160}
               class="h-12 md:h-16 w-auto object-contain transition-all duration-500"
             />
           ) : (
@@ -37,9 +40,11 @@ const duplicatedSponsors = [...sponsors, ...sponsors];
       {duplicatedSponsors.map((sponsor: any) => (
         <div class="mx-6 md:mx-16 flex-shrink-0">
           {sponsor.logo ? (
-            <img
+            <Image
               src={urlFor(sponsor.logo).height(80).url()}
               alt={sponsor.name}
+              height={80}
+              width={160}
               class="h-12 md:h-16 w-auto object-contain transition-all duration-500"
             />
           ) : (

@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { getEvents, urlFor } from '../utils/sanity';
 
 const allEvents = await getEvents();
@@ -43,9 +44,11 @@ const eventSections = [
                 >
                   <div class="relative aspect-[4/3] bg-brand-primary rounded-[0.5rem] overflow-hidden shadow-sm group-hover:shadow-2xl transition-all duration-500 mb-8">
                     {event.coverPhoto && (
-                      <img
+                      <Image
                         src={urlFor(event.coverPhoto).width(1000).url()}
                         alt={event.name}
+                        width={1000}
+                        height={750}
                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-95 group-hover:opacity-100"
                       />
                     )}
@@ -151,4 +154,3 @@ const eventSections = [
     background: #d4af37 !important;
   }
 </style>
-

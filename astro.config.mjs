@@ -18,4 +18,7 @@ export default defineConfig({
       studioBasePath: "/admin",
     }),
   ],
+  image: {
+    remotePatterns: [{ protocol: 'https', hostname: 'cdn.sanity.io' }],
+  },
 });

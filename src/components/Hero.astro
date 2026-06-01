@@ -1,10 +1,17 @@
-<section class="relative w-full h-[calc(100vh-4rem)] min-h-[600px] flex items-center overflow-hidden bg-brand-primary">
+---
+import { Image } from 'astro:assets';
+import heroImage from '../assets/hero.png';
+---
+
+<section class="relative w-full h-[calc(100vh-5rem)] min-h-[600px] flex items-center overflow-hidden bg-brand-primary">
   
   <div class="absolute inset-0 z-0">
-    <img 
-      src="/hero.png" 
-      alt="Background" 
+    <Image 
+      src={heroImage} 
+      alt="FINSOC Background" 
       class="w-full h-full object-cover"
+      loading="eager"
+      fetchpriority="high"
     />
     <div class="absolute inset-0 bg-gradient-to-r from-brand-primary via-brand-primary/30 to-transparent"></div>
   </div>

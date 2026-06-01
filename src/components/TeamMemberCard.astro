@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { urlFor, type TeamMember } from '../utils/sanity';
 
 interface Props {
@@ -10,9 +11,11 @@ const { member } = Astro.props;
 
 <div class="group relative overflow-hidden rounded-[0.5rem] bg-gray-50 border border-black shadow-md transition-all duration-500 hover:shadow-2xl">
   <div class="aspect-[4/5] w-full overflow-hidden">
-    <img
+    <Image
       src={urlFor(member.image).width(600).height(750).url()}
       alt={member.name}
+      width={600}
+      height={750}
       class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
     />
   </div>

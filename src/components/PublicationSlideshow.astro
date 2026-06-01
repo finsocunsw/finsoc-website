@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { urlFor } from '../utils/sanity';
 
 interface Props {
@@ -17,9 +18,11 @@ const { slides, title } = Astro.props;
     {slides.map((slide, index) => (
       <div class="slide flex-none w-[85%] md:w-[60%] lg:w-[45%] snap-center first:ml-[7.5%] md:first:ml-[20%] lg:first:ml-[27.5%] last:mr-[7.5%] md:last:mr-[20%] lg:last:mr-[27.5%] transition-all duration-700 ease-out scale-[0.9] opacity-40 [&.active]:scale-[1.0] [&.active]:opacity-100">
         <div class="bg-white rounded-sm overflow-hidden shadow-2xl border border-afr-border group/card relative">
-          <img 
+          <Image 
             src={urlFor(slide).width(1080).height(1350).fit('crop').url()} 
             alt={slide.alt || `${title} - Slide ${index + 1}`}
+            width={1080}
+            height={1350}
             class="w-full h-full object-cover aspect-[4/5] transition-transform duration-700 group-hover/card:scale-[1.02]"
           />
           <div class="absolute inset-0 bg-afr-black/0 group-hover/card:bg-afr-black/5 transition-colors duration-500"></div>
