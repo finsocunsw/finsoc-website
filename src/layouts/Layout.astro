@@ -1,14 +1,23 @@
 ---
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import '@fontsource-variable/cabin';
+import '@fontsource-variable/newsreader/opsz.css';
 import '../styles/global.css';
 
 interface Props {
 	title: string;
 	mainClass?: string;
+	/** The home page sets the footer inside its last sheet instead */
+	footer?: boolean;
+	/** Colour the navbar starts in (the home page starts navy, over its hero) */
+	navTone?: 'clear' | 'white' | 'mist' | 'steel' | 'navy';
+	/** The page colour behind everything, shown when the page bounces past
+	    its top or bottom (the home page is navy, like its hero and close) */
+	pageClass?: string;
 }
 
-const { title, mainClass = "bg-white" } = Astro.props;
+const { title, mainClass = "bg-white", footer = true, navTone = "white", pageClass = "bg-white" } = Astro.props;
 ---
 
 <!doctype html>
@@ -21,11 +30,11 @@ const { title, mainClass = "bg-white" } = Astro.props;
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body class="min-h-screen flex flex-col bg-white pt-20">
-		<Navbar />
+	<body class={`min-h-screen flex flex-col pt-20 ${pageClass}`}>
+		<Navbar tone={navTone} />
 		<main class={`flex-grow ${mainClass}`}>
 			<slot />
 		</main>
-		<Footer />
+		{footer && <Footer />}
 	</body>
 </html>

@@ -1,49 +1,332 @@
 ---
 import { Image } from 'astro:assets';
 import heroImage from '../assets/hero.png';
+
+interface Props {
+  /** The home page: the hero runs up under a clear navbar, so its photograph
+      reaches the top of the screen and the bar floats on it */
+  underNav?: boolean;
+}
+
+const { underNav = false } = Astro.props;
+
+const photo = {
+  src: heroImage,
+  widths: [640, 960, 1280, 1600, 2048],
+  sizes: '(min-width: 1024px) 74vw, 100vw',
+  loading: 'eager' as const,
+  decoding: 'sync' as const,
+};
 ---
 
-<section class="relative w-full h-[calc(100vh-5rem)] min-h-[600px] flex items-center overflow-hidden bg-brand-primary">
-  
-  <div class="absolute inset-0 z-0">
-    <Image 
-      src={heroImage} 
-      alt="FINSOC Background" 
-      class="w-full h-full object-cover"
-      loading="eager"
-      fetchpriority="high"
-    />
-    <div class="absolute inset-0 bg-gradient-to-r from-brand-primary via-brand-primary/30 to-transparent"></div>
-  </div>
+<section class:list={['hero relative isolate overflow-hidden bg-brand-primary lg:items-center lg:h-[calc(100svh-5rem)] lg:min-h-[640px] lg:max-h-[60rem]', underNav && 'hero--under-nav']}>
 
-  <div class="absolute inset-0 opacity-20 z-10">
-    <div class="absolute top-0 -left-20 w-96 h-96 bg-brand-accent rounded-full blur-[120px]"></div>
-  </div>
-
-  <div class="max-w-7xl mx-auto md:ml-12 px-4 sm:px-6 lg:px-8 relative z-20 w-full">
-    <div class="max-w-4xl">
-      <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-brand-secondary leading-[0.9] tracking-tighter">
-        ELEVATING <span class="text-brand-accent">FINANCIAL</span><br/>LEADERSHIP.
+  <div class="relative z-10 mx-auto w-full max-w-7xl px-4 pt-14 sm:px-6 sm:pt-20 lg:px-8 lg:py-0">
+    <div class="max-w-xl lg:max-w-[min(46%,40rem)]">
+      <h1 class="text-[clamp(2.75rem,7.2vw,5.25rem)] font-black leading-[0.92] tracking-[-0.04em] text-brand-secondary text-balance">
+        ELEVATING <span class="text-brand-accent">FINANCIAL</span> LEADERSHIP
       </h1>
-      
-      <p class="mt-6 md:mt-8 text-lg md:text-xl text-gray-200 max-w-xl leading-relaxed font-medium">
-        Our mission is to serve as Australia’s premier student gateway to the financial services sector by providing world-class education and professional enrichment to over 4,000 members at UNSW.
+
+      <p class="mt-6 max-w-[34rem] text-base leading-relaxed font-medium text-brand-secondary/80 sm:text-lg md:mt-8">
+        Our mission is to serve as Australia’s premier student gateway to the financial services sector by providing world-class education and professional enrichment to over 5,000 members at UNSW.
       </p>
-      
-      <div class="mt-10 flex flex-col sm:flex-row gap-4 md:gap-6">
-        <a href="https://campus.hellorubric.com/?tab=memberships&s=12537" class="bg-brand-accent text-brand-primary px-8 md:px-10 py-4 md:py-5 rounded-[0.5rem] text-base md:text-lg font-black hover:bg-brand-secondary hover:-translate-y-1 transition-all shadow-xl shadow-brand-accent/20 text-center">
+
+      <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4 md:mt-10">
+        <a
+          href="https://campus.hellorubric.com/?tab=memberships&s=12537"
+          class="hero-btn bg-brand-accent text-brand-primary hover:bg-brand-secondary"
+        >
           BECOME A MEMBER
         </a>
-        <a href="/#events" class="bg-transparent text-brand-secondary border-2 border-brand-secondary/30 px-8 md:px-10 py-4 md:py-5 rounded-[0.5rem] text-base md:text-lg font-black hover:bg-brand-secondary/10 transition-all text-center">
+        <a
+          href="/#events"
+          class="hero-btn border-2 border-brand-secondary/30 text-brand-secondary hover:border-brand-secondary/60 hover:bg-brand-secondary/10"
+        >
           LATEST EVENTS
         </a>
       </div>
-      <!--
-        <div class="mt-16 border-l-4 border-brand-accent pl-6 opacity-80">
-          <p class="text-brand-secondary font-bold text-lg italic leading-tight">"Empowering students to excel in high-stakes finance."</p>
-          <p class="mt-1 text-brand-accent font-bold text-xs tracking-widest uppercase">FinSoc Executive Board</p>
-        </div>
-      -->
     </div>
   </div>
+
+  <!--
+    One photograph, two states. Under the copy it is graded into the brand's
+    navy and blue, so its shadows are the panel colour and it dissolves into
+    the background. Towards the people it develops into true colour.
+  -->
+  <figure class="hero-photo">
+    <div class="hero-duo">
+      <Image
+        {...photo}
+        alt="FINSOC members and mentors at the Women in Finance Mentoring Program 2026"
+        fetchpriority="high"
+        class="hero-img"
+      />
+      <span aria-hidden="true" class="hero-duo-tint"></span>
+      <span aria-hidden="true" class="hero-duo-lift"></span>
+    </div>
+
+    <Image {...photo} alt="" aria-hidden="true" class="hero-img hero-colour" />
+
+    <span aria-hidden="true" class="hero-scrim"></span>
+
+    <figcaption class="hero-caption">
+      Women in Finance Mentoring Program, 2026
+    </figcaption>
+  </figure>
+
+  <script is:inline>
+    (function () {
+      var hero = document.currentScript && document.currentScript.parentElement;
+      if (!hero || !window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var img = hero.querySelector('.hero-colour');
+      if (!img) return;
+      hero.classList.add('will-develop');
+      var started = false;
+      function develop() {
+        if (started) return;
+        started = true;
+        // Flush the held-back state so the colour transitions in rather than snapping
+        getComputedStyle(img).getPropertyValue('--reveal');
+        hero.classList.add('is-developing');
+      }
+      if (img.complete) develop();
+      else {
+        img.addEventListener('load', develop, { once: true });
+        img.addEventListener('error', develop, { once: true });
+      }
+      setTimeout(develop, 2500);
+    })();
+  </script>
 </section>
+
+<style>
+  @property --reveal {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 0%;
+  }
+
+  .hero {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero ::selection {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+  }
+
+  /* ---------- Photo ---------- */
+
+  .hero-photo {
+    /* Mobile: the photo rises out of the navy below the buttons and develops downwards */
+    --dir: to bottom;
+    --duo-from: 14%;
+    --duo-to: 40%;
+    --colour-from: 40%;
+    --colour-to: 70%;
+
+    position: relative;
+    margin: -2.5rem 0 0;
+    aspect-ratio: 6 / 5;
+    width: 100%;
+  }
+
+  .hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 35%;
+  }
+
+  .hero-duo {
+    position: absolute;
+    inset: 0;
+    isolation: isolate;
+    -webkit-mask-image: linear-gradient(var(--dir), transparent var(--duo-from), #000 var(--duo-to));
+    mask-image: linear-gradient(var(--dir), transparent var(--duo-from), #000 var(--duo-to));
+  }
+
+  .hero-duo .hero-img {
+    filter: grayscale(1) contrast(1.15) brightness(0.92);
+  }
+
+  /* Duotone: highlights become a muted sky blue, shadows become the panel navy */
+  .hero-duo-tint,
+  .hero-duo-lift {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero-duo-tint {
+    background: color-mix(in srgb, var(--color-brand-accent) 62%, var(--color-brand-primary));
+    mix-blend-mode: multiply;
+  }
+
+  .hero-duo-lift {
+    background: var(--color-brand-primary);
+    mix-blend-mode: lighten;
+  }
+
+  .hero-colour {
+    -webkit-mask-image: linear-gradient(
+      var(--dir),
+      transparent calc(var(--colour-from) + var(--reveal)),
+      #000 calc(var(--colour-to) + var(--reveal))
+    );
+    mask-image: linear-gradient(
+      var(--dir),
+      transparent calc(var(--colour-from) + var(--reveal)),
+      #000 calc(var(--colour-to) + var(--reveal))
+    );
+    transition: --reveal 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Before the photo has loaded, hold the colour back; then let it develop in */
+  .will-develop:not(.is-developing) .hero-colour {
+    --reveal: 70%;
+  }
+
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--color-brand-primary) 0%, rgb(10 25 47 / 0.7) 10%, rgb(10 25 47 / 0) 34%);
+  }
+
+  .hero-caption {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.85);
+  }
+
+  @media (min-width: 640px) {
+    .hero-photo {
+      margin-top: -3rem;
+      aspect-ratio: 16 / 10;
+    }
+
+    .hero-caption {
+      right: 1.5rem;
+      bottom: 1.5rem;
+      font-size: 11px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero {
+      flex-direction: row;
+    }
+
+    /* Desktop: the photo spans most of the hero and develops leftwards towards the copy */
+    .hero-photo {
+      --dir: to right;
+      --duo-from: 0%;
+      --duo-to: 24%;
+      --colour-from: 30%;
+      --colour-to: 60%;
+
+      position: absolute;
+      inset: 0 0 0 auto;
+      margin: 0;
+      width: 74%;
+      aspect-ratio: auto;
+    }
+
+    .hero-scrim {
+      background:
+        linear-gradient(to right, rgb(10 25 47 / 0.5) 0%, rgb(10 25 47 / 0) 40%),
+        linear-gradient(to top, var(--color-brand-primary) 0%, rgb(10 25 47 / 0.7) 10%, rgb(10 25 47 / 0) 34%);
+    }
+
+    .hero-caption {
+      right: 2rem;
+      bottom: 2rem;
+    }
+
+    /* Under the clear navbar the hero is the whole first screen, and a soft
+       shade at its head keeps the floating logo and links legible on the
+       photograph, so bar and hero read as one piece */
+    .hero--under-nav {
+      height: 100svh;
+      min-height: calc(640px + 5rem);
+      max-height: 65rem;
+    }
+
+    /* The photograph runs right up behind the clear bar; a soft shade at its
+       head keeps the floating logo and links legible on it */
+    .hero--under-nav .hero-scrim {
+      background:
+        linear-gradient(to bottom, rgb(10 25 47 / 0.62) 0, rgb(10 25 47 / 0.25) 5rem, rgb(10 25 47 / 0) 10rem),
+        linear-gradient(to right, rgb(10 25 47 / 0.5) 0%, rgb(10 25 47 / 0) 40%),
+        linear-gradient(to top, var(--color-brand-primary) 0%, rgb(10 25 47 / 0.7) 10%, rgb(10 25 47 / 0) 34%);
+    }
+  }
+
+  /* Room for the navbar that floats over the hero's head */
+  .hero--under-nav {
+    padding-top: 5rem;
+  }
+
+  /* ---------- Buttons ---------- */
+
+  .hero-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.5rem;
+    padding: 0 2rem;
+    white-space: nowrap;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-align: center;
+    transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hero-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .hero-btn:active {
+    transform: translateY(0);
+  }
+
+  .hero-btn:focus-visible {
+    outline: 2px solid var(--color-brand-accent);
+    outline-offset: 3px;
+  }
+
+  @media (min-width: 768px) {
+    .hero-btn {
+      min-height: 3.75rem;
+      font-size: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .hero-btn {
+      padding: 0 1.5rem;
+      font-size: 0.9375rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-btn,
+    .hero-btn:hover,
+    .hero-colour {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>

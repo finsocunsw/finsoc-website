@@ -1,0 +1,21 @@
+---
+/**
+ * The one previous/next control used by every carousel on the site.
+ * Styles live in global.css under `.carousel-btn`.
+ */
+interface Props {
+  direction: 'prev' | 'next';
+  label: string;
+  class?: string;
+  [attr: string]: unknown;
+}
+
+const { direction, label, class: className, ...attrs } = Astro.props;
+const path = direction === 'prev' ? 'm15 18-6-6 6-6' : 'm9 18 6-6-6-6';
+---
+
+<button type="button" class:list={['carousel-btn', className]} aria-label={label} {...attrs}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d={path} />
+  </svg>
+</button>

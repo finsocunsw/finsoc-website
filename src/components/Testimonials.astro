@@ -3,53 +3,193 @@ import { Image } from 'astro:assets';
 import arianaImg from '../assets/testimonial-ariana.png';
 import justinImg from '../assets/testimonial-justin.png';
 
+/*
+  Each testimonial is the member's own words, with one phrase from it
+  highlighted where it falls: the point of that quote at a glance.
+*/
 const testimonials = [
   {
     quote: "What I appreciated the most about the sponsorships subcommittee was the opportunity to make meaningful and long-lasting friendships. With my FINSOC friends, we've been hitting up different food spots in Sydney, planning classes together and making amazing memories through road trips and fun FINSOC events.",
+    highlight: "meaningful and long-lasting friendships",
     author: "Ariana Lai",
     role: "Sponsorships Subcommittee 2022",
     image: arianaImg
   },
   {
     quote: "Joining FINSOC publications helped fulfil university life and connected me with like-minded students, many who I call my closest friends. Being part of the society, gave me industry experience without needing to have my foot in the door, which is why joining FINSOC subcommittee is something that I certainly recommend!",
+    highlight: "industry experience without needing to have my foot in the door",
     author: "Justin Nelson",
     role: "Publications Subcommittee 2022",
     image: justinImg
   },
 ];
+
+// Split each quote around its highlighted phrase so it can be marked in place
+const items = testimonials.map((t) => {
+  const at = t.quote.indexOf(t.highlight);
+  return at < 0
+    ? { ...t, before: t.quote, marked: '', after: '' }
+    : { ...t, before: t.quote.slice(0, at), marked: t.highlight, after: t.quote.slice(at + t.highlight.length) };
+});
 ---
 
-<section id="testimonials" class="py-16 md:py-24 bg-brand-primary relative overflow-hidden">
-  <div class="absolute inset-0 opacity-5">
-     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full border-[200px] border-brand-accent rounded-full"></div>
+<section id="testimonials" class="py-10 text-brand-primary md:py-14" aria-labelledby="testimonials-title">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <h2 id="testimonials-title" class="text-4xl font-black tracking-tight md:text-5xl">HEAR FROM OUR MEMBERS</h2>
   </div>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-    <div class="text-center mb-12 md:mb-16">
-      <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-4 uppercase">TESTIMONIALS</h2>
-      <h3 class="text-3xl md:text-5xl font-black text-brand-secondary">HEAR FROM OUR MEMBERS.</h3>
-    </div>
+  <!-- Side by side on wide screens; a swipeable pair on phones, so the sheet
+       still fits one screen -->
+  <ul class="testimonials" role="list">
+    {items.map((t) => (
+      <li class="testimonial">
+        <figure class="m-0">
+          <figcaption class="testimonial-who">
+            <span class="testimonial-portrait">
+              <Image src={t.image} alt="" width={288} height={288} class="h-full w-full object-cover" />
+            </span>
+            <span>
+              <span class="block text-lg font-bold tracking-tight md:text-xl">{t.author}</span>
+              <span class="mt-1 block text-[11px] font-black uppercase tracking-[0.2em] text-steel">{t.role}</span>
+            </span>
+          </figcaption>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-      {testimonials.map((t) => (
-        <div class="bg-brand-secondary/5 backdrop-blur-sm p-10 rounded-[0.5rem] border border-brand-secondary/10 flex flex-col hover:bg-brand-secondary/10 transition-colors group">
-          <div class="mb-8">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-accent opacity-50 group-hover:opacity-100 transition-opacity"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 2.5 1 4.066 2 5V21Z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h1.5c0 1.25 0 1 0 1v1c0 2.5 1 4.066 2 5V21Z"/></svg>
-          </div>
-          <p class="text-xl text-gray-300 font-medium italic leading-relaxed mb-10 flex-grow">
-            "{t.quote}"
-          </p>
-          <div class="flex items-center gap-5 mt-auto">
-            <div class="w-14 h-14 bg-brand-accent rounded-[0.5rem] overflow-hidden shadow-lg shadow-brand-accent/20">
-              <Image src={t.image} alt={t.author} class="w-full h-full object-cover" />
-            </div>
-            <div>
-              <p class="text-brand-secondary font-black text-lg tracking-tight">{t.author}</p>
-              <p class="text-brand-accent text-sm font-bold uppercase tracking-widest">{t.role}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
+          <blockquote class="testimonial-quote">
+            <p>{t.before}<mark>{t.marked}</mark>{t.after}</p>
+          </blockquote>
+        </figure>
+      </li>
+    ))}
+  </ul>
 </section>
+
+<style>
+  .testimonials {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(86%, 26rem);
+    gap: 1.25rem;
+    margin: 1.5rem 0 0;
+    padding: 0.5rem 1rem 0.5rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 1rem;
+    scrollbar-width: none;
+  }
+
+  .testimonials::-webkit-scrollbar {
+    display: none;
+  }
+
+  .testimonial {
+    padding-left: 0.375rem;
+    scroll-snap-align: start;
+  }
+
+  .testimonial-who {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  /* Larger portraits, with a ring in the logo's light steel set just off the photo */
+  .testimonial-portrait {
+    display: block;
+    flex: none;
+    width: 5.5rem;
+    height: 5.5rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    box-shadow:
+      0 0 0 3px var(--color-brand-secondary),
+      0 0 0 5px var(--color-steel-light);
+  }
+
+  .testimonial-quote {
+    margin: 1.5rem 0 0;
+    max-width: 34rem;
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: rgb(10 25 47 / 0.8);
+  }
+
+  /* The one highlighted point: a soft pale-blue band behind the phrase,
+     set in italic at full ink, like a reader's highlighter */
+  .testimonial-quote mark {
+    /* the band bleeds past the words without nudging the punctuation after it */
+    margin-inline: -0.15em;
+    padding: 0.05em 0.15em;
+    background: rgb(144 181 197 / 0.28);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--color-brand-primary);
+  }
+
+  @media (min-width: 768px) {
+    .testimonials {
+      grid-auto-flow: row;
+      grid-auto-columns: auto;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 4rem;
+      max-width: 80rem;
+      margin: 2.5rem auto 0;
+      padding: 0 1.5rem;
+      overflow: visible;
+    }
+
+    /* A hairline down the middle of the gap */
+    .testimonial + .testimonial {
+      margin-left: -2rem;
+      padding-left: 2rem;
+      border-left: 1px solid rgb(10 25 47 / 0.12);
+    }
+
+    .testimonial-portrait {
+      width: 7rem;
+      height: 7rem;
+    }
+
+  }
+
+  @media (min-width: 1024px) {
+    .testimonials {
+      padding: 0 2rem;
+    }
+  }
+
+  /* Short phones: tighter so the sheet still fits one screen */
+  @media (max-width: 639px) and (max-height: 740px) {
+    #testimonials {
+      padding-block: 1.25rem;
+    }
+
+    #testimonials h2 {
+      font-size: 2.25rem;
+    }
+
+    .testimonials {
+      margin-top: 1.25rem;
+    }
+
+    .testimonial-portrait {
+      width: 4.25rem;
+      height: 4.25rem;
+    }
+
+
+    .testimonial-quote {
+      margin-top: 1rem;
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+  }
+
+  .testimonial ::selection {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+  }
+</style>

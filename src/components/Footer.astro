@@ -1,64 +1,194 @@
 ---
-import { Image } from 'astro:assets';
-import finsocLogo from '../assets/logo.png';
+// One quiet line: the navbar above already carries the logo, and the join
+// call above the footer does the persuading.
+interface Props {
+  /** navy on every page; mist where it closes the home page's mist sheet */
+  tone?: 'navy' | 'mist';
+}
+
+const { tone = 'navy' } = Astro.props;
 const year = new Date().getFullYear();
+
+const links = [
+  { href: '/our-team', label: 'Our Team' },
+  { href: '/#events', label: 'Events' },
+  { href: '/affiliations', label: 'Affiliations' },
+  { href: '/publications', label: 'Publications' },
+];
+
+const socials = [
+  {
+    href: 'https://www.linkedin.com/company/unsw-finsoc',
+    label: 'FINSOC on LinkedIn',
+    icon: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>',
+  },
+  {
+    href: 'https://www.instagram.com/unswfinsoc/',
+    label: 'FINSOC on Instagram',
+    icon: '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>',
+  },
+  {
+    href: 'https://www.facebook.com/FINSOCUNSW/',
+    label: 'FINSOC on Facebook',
+    icon: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
+  },
+  {
+    href: 'mailto:admin@unswfinsoc.org',
+    label: 'Email FINSOC at admin@unswfinsoc.org',
+    icon: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  },
+];
 ---
 
-<footer class="bg-brand-primary text-brand-secondary py-16 md:py-24 relative overflow-hidden">
-  <div class="absolute inset-0 opacity-5 pointer-events-none">
-     <div class="absolute bottom-0 right-0 w-1/2 h-1/2 bg-brand-accent rounded-full blur-[180px]"></div>
-  </div>
+<footer class="site-footer" data-tone={tone}>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="footer-line">
+      <nav aria-label="Footer">
+        <ul class="footer-links" role="list">
+          {links.map((link) => (
+            <li><a href={link.href} class="footer-link">{link.label}</a></li>
+          ))}
+        </ul>
+      </nav>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8">
-      <div class="col-span-1 md:col-span-2">
-        <div class="flex items-center gap-2 mb-8 group">
-        <Image 
-          src={finsocLogo} 
-          alt="FINSOC Logo" 
-          class="w-full h-full object-cover"
-          loading="eager"
-          fetchpriority="high"
-        />
-        </div>
-        <div class="mt-10 flex items-center gap-6">
-          <a href="https://www.linkedin.com/company/unsw-finsoc" class="w-12 h-12 rounded-[0.5rem] bg-brand-secondary/5 flex items-center justify-center hover:bg-brand-accent hover:text-brand-primary transition-all group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
-          </a>
-          <a href="https://www.instagram.com/unswfinsoc/" class="w-12 h-12 rounded-[0.5rem] bg-brand-secondary/5 flex items-center justify-center hover:bg-brand-accent hover:text-brand-primary transition-all group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
-          </a>
-          <a href="https://www.facebook.com/FINSOCUNSW/" class="w-12 h-12 rounded-[0.5rem] bg-brand-secondary/5 flex items-center justify-center hover:bg-brand-accent hover:text-brand-primary transition-all group">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:scale-110 transition-transform"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          </a>
-        </div>
-      </div>
-      
-      <div>
-        <h3 class="text-brand-accent font-black tracking-widest text-xs uppercase mb-8">Navigation</h3>
-        <ul class="space-y-4">
-          <li><a href="/our-team" class="text-gray-400 hover:text-brand-secondary transition-colors font-bold uppercase tracking-wider text-sm">Our Team</a></li>
-          <li><a href="/#events" class="text-gray-400 hover:text-brand-secondary transition-colors font-bold uppercase tracking-wider text-sm">Events</a></li>
-          <li><a href="/affiliations" class="text-gray-400 hover:text-brand-secondary transition-colors font-bold uppercase tracking-wider text-sm">Affiliations</a></li>
-          <li><a href="/publications" class="text-gray-400 hover:text-brand-secondary transition-colors font-bold uppercase tracking-wider text-sm">Publications</a></li>
-        </ul>
-      </div>
-      
-      <div>
-        <h3 class="text-brand-accent font-black tracking-widest text-xs uppercase mb-8">Resources</h3>
-        <ul class="space-y-4">
-          <li><a href="https://campus.hellorubric.com/?tab=memberships&s=12537" class="text-gray-400 hover:text-brand-secondary transition-colors font-bold uppercase tracking-wider text-sm">Join Us</a></li>
-          <li><a href="mailto:admin@unswfinsoc.org" class="text-gray-400 hover:text-brand-secondary transition-colors font-bold uppercase tracking-wider text-sm">Contact Us</a></li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="mt-24 pt-8 border-t border-brand-secondary/10 flex flex-col md:flex-row justify-between items-center gap-6">
-      <p class="text-xs text-gray-500 font-bold tracking-widest uppercase text-center md:text-left">
-        &copy; {year} UNSW FINSOC
-      </p>
-      <div class="flex gap-10">
-      </div>
+      <ul class="footer-socials" role="list">
+        {socials.map((s) => (
+          <li>
+            <a href={s.href} class="footer-social" aria-label={s.label}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={s.icon} />
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <p class="footer-copy">&copy; {year} UNSW FINSOC</p>
     </div>
   </div>
 </footer>
+
+<style>
+  .site-footer {
+    --footer-ink: var(--color-brand-secondary);
+    --footer-soft: rgb(255 255 255 / 0.75);
+    --footer-faint: rgb(255 255 255 / 0.6);
+    --footer-rule: rgb(255 255 255 / 0.12);
+    --footer-focus: var(--color-brand-accent);
+
+    background: var(--color-brand-primary);
+    color: var(--footer-ink);
+  }
+
+  /* On the home page's mist close: navy text on mist, gentle contrast */
+  .site-footer[data-tone='mist'] {
+    --footer-ink: var(--color-brand-primary);
+    --footer-soft: rgb(10 25 47 / 0.75);
+    --footer-faint: rgb(10 25 47 / 0.65);
+    --footer-rule: rgb(10 25 47 / 0.12);
+    --footer-focus: var(--color-brand-primary);
+
+    background: var(--color-mist);
+  }
+
+  .footer-line {
+    display: grid;
+    gap: 1.25rem;
+    justify-items: start;
+    padding: 1.5rem 0 2rem;
+    border-top: 1px solid var(--footer-rule);
+  }
+
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 0 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer-link,
+  .footer-copy {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .footer-link {
+    display: inline-block;
+    padding: 0.5rem 0;
+    color: var(--footer-soft);
+    transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .footer-link:hover {
+    color: var(--footer-ink);
+  }
+
+  .footer-socials {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0 0 0 -0.625rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.5rem;
+    color: var(--footer-soft);
+    transition:
+      background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .footer-social:hover {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+  }
+
+  .footer-link:focus-visible,
+  .footer-social:focus-visible {
+    outline: 2px solid var(--footer-focus);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
+
+  .footer-copy {
+    margin: 0;
+    color: var(--footer-faint);
+  }
+
+  @media (min-width: 640px) {
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.5rem;
+    }
+  }
+
+  /* Wide screens: links, socials and copyright share one line */
+  @media (min-width: 1024px) {
+    .footer-line {
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 2.5rem;
+      padding: 1rem 0 1.25rem;
+    }
+
+    .footer-socials {
+      margin: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer-link,
+    .footer-social {
+      transition: none;
+    }
+  }
+</style>

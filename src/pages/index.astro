@@ -4,43 +4,353 @@ import Hero from '../components/Hero.astro';
 import Sponsors from '../components/Sponsors.astro';
 import EventsCarousel from '../components/EventsCarousel.astro';
 import Testimonials from '../components/Testimonials.astro';
-import JoinSection from '../components/JoinSection.astro';
+import Footer from '../components/Footer.astro';
 import PublicationSlideshow from '../components/PublicationSlideshow.astro';
-import { urlFor, getLatestPublication } from '../utils/sanity';
+import CarouselButton from '../components/CarouselButton.astro';
+import { getLatestPublication } from '../utils/sanity';
 
 const latestPublication = await getLatestPublication();
 ---
 
-<Layout title="UNSW FINSOC">
-  <Hero />
-  
-  <Sponsors />
-  
-  <EventsCarousel />
-
-  <section id="latest-publication" class="py-16 md:py-24 bg-gray-50 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 md:mb-16">
-        <div class="max-w-xl text-left">
-          <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-4 uppercase">OUR LATEST ISSUE</h2>
-          <h3 class="text-3xl md:text-5xl font-black text-brand-primary tracking-tight">PUBLICATIONS.</h3>
-        </div>
-        <a href="/publications" class="text-brand-primary font-bold border-b-2 border-brand-accent hover:text-brand-accent transition-colors pb-1 uppercase tracking-wider text-sm">VIEW ALL PUBLICATIONS</a>
-      </div>
-
-      {latestPublication ? (
-        <div class="space-y-12">
-          <PublicationSlideshow slides={latestPublication.slides} title={latestPublication.title} />
-        </div>
-      ) : (
-        <div class="py-20 text-center bg-white rounded-[0.5rem] border-4 border-dashed border-gray-100">
-          <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No publications found yet.</p>
-        </div>
-      )}
+<!--
+  The page is a stack of sheets: the navy hero (running up under a clear
+  navbar), white events, mist Review, white members, and the mist close with
+  the partner drum and footer. Each sheet pins once its content has scrolled past and
+  the next one slides up over it, so the sections land on one another instead
+  of sitting end to end.
+-->
+<Layout title="UNSW FINSOC" footer={false} navTone="clear" pageClass="bg-brand-primary" mainClass="bg-brand-primary">
+  <div class="sheets">
+    <div class="sheet sheet--hero bg-brand-primary" data-tone="clear">
+      <Hero underNav />
     </div>
-  </section>
 
-  <Testimonials />
-  
-  <JoinSection />
+    <div class="sheet bg-brand-secondary" data-tone="white" data-nav="events">
+      <EventsCarousel />
+    </div>
+
+    <div class="sheet bg-mist" data-tone="mist" data-nav="publications">
+      <section id="latest-publication" class="py-10 md:py-12">
+        <div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <!-- Wide screens: the heading stands in a column on the left so the
+               pages can take the sheet's full height -->
+          <div class="review-layout">
+          <div class="review-head">
+            <div class="max-w-2xl">
+              <h2 class="text-4xl font-black tracking-tight text-brand-primary md:text-5xl">PUBLICATIONS</h2>
+              {latestPublication && (
+                <p class="mt-3 font-serif text-lg italic text-brand-primary/80 md:text-xl">
+                  Latest issue: {latestPublication.title}
+                </p>
+              )}
+            </div>
+            <div class="review-actions">
+              <a href="/publications" class="section-link" aria-label="View all publications">VIEW ALL<span class="review-link-more"> PUBLICATIONS</span></a>
+              {latestPublication && (
+                <div class="carousel-nav">
+                  <CarouselButton direction="prev" label="Previous page" data-carousel="latest-publication" data-dir="prev" />
+                  <CarouselButton direction="next" label="Next page" data-carousel="latest-publication" data-dir="next" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {latestPublication ? (
+            <div class="[--slideshow-accent:var(--color-brand-primary)] [--slideshow-meta:rgb(10_25_47_/_0.75)]">
+              <PublicationSlideshow id="latest-publication" size="feature" href={latestPublication.slug?.current ? `/publications/${latestPublication.slug.current}` : undefined} controls={false} slides={latestPublication.slides} title={latestPublication.title} />
+            </div>
+          ) : (
+            <div class="rounded-[0.5rem] border-2 border-dashed border-steel/30 py-20 text-center">
+              <p class="text-sm font-bold uppercase tracking-widest text-brand-primary/75">No publications found yet.</p>
+            </div>
+          )}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="sheet bg-brand-secondary" data-tone="white">
+      <Testimonials />
+    </div>
+
+    <div class="sheet sheet--last bg-mist" data-tone="mist">
+      <Sponsors />
+      <Footer tone="mist" />
+    </div>
+  </div>
 </Layout>
+
+<script>
+  // A sheet pins once its whole content has scrolled into view, so a sheet
+  // taller than the screen is read to its foot before the next one covers
+  // it. Without this script the sheets simply sit end to end.
+  const stack = document.querySelector<HTMLElement>('.sheets');
+  if (stack) {
+    const sheets = Array.from(stack.querySelectorAll<HTMLElement>('.sheet'));
+    const NAV = 80;
+
+    const measure = () => {
+      for (const sheet of sheets) sheet.style.setProperty('--sheet-h', `${sheet.offsetHeight}px`);
+    };
+    const observer = new ResizeObserver(measure);
+    sheets.forEach((sheet) => observer.observe(sheet));
+    measure();
+    stack.classList.add('is-stacking');
+
+    // Where a sheet sits in the document, ignoring the pinning
+    const naturalTop = (index: number) => {
+      let top = stack.getBoundingClientRect().top + window.scrollY;
+      // Each sheet starts 0.5rem up over the one before (or, after the events
+      // sheet, a hold further down): its own margin says which
+      for (let i = 0; i < index; i++) top += sheets[i].offsetHeight + parseFloat(getComputedStyle(sheets[i + 1]).marginTop);
+      return top;
+    };
+
+    // The scroll position that shows an element in its sheet, uncovered:
+    // at the latest, the moment its sheet pins
+    const revealScroll = (el: Element) => {
+      const sheet = el.closest<HTMLElement>('.sheet');
+      if (!sheet) return null;
+      const index = sheets.indexOf(sheet);
+      const top = naturalTop(index);
+      const pin = top - (parseFloat(getComputedStyle(sheet).top) || 0);
+      const within = el.getBoundingClientRect().top - sheet.getBoundingClientRect().top;
+      return Math.max(0, Math.min(pin, top + within - NAV - 16));
+    };
+
+    const smooth = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+
+    // In-page links (the hero's LATEST EVENTS, the footer's EVENTS) land on
+    // their sheet rather than under the sheet that has slid over it
+    const goToHash = (hash: string, behavior: ScrollBehavior) => {
+      const target = hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+      const y = target && revealScroll(target);
+      if (y === null || y === undefined) return false;
+      window.scrollTo({ top: y, behavior });
+      return true;
+    };
+
+    document.addEventListener('click', (event) => {
+      const link = (event.target as Element).closest<HTMLAnchorElement>('a[href*="#"]');
+      if (!link || link.origin !== location.origin || link.pathname !== location.pathname) return;
+      if (goToHash(link.hash, smooth())) {
+        event.preventDefault();
+        history.pushState(null, '', link.hash);
+      }
+    });
+
+    if (location.hash) requestAnimationFrame(() => goToHash(location.hash, 'auto'));
+
+    // Keyboard focus never hides under a covering sheet: tabbing back into a
+    // covered sheet scrolls it back into view
+    stack.addEventListener('focusin', (event) => {
+      const el = event.target as HTMLElement;
+      const sheet = el.closest<HTMLElement>('.sheet');
+      const next = sheet?.nextElementSibling as HTMLElement | null;
+      if (!sheet || !next) return;
+      const rect = el.getBoundingClientRect();
+      if (next.getBoundingClientRect().top < rect.bottom || rect.top < NAV) {
+        const y = revealScroll(el);
+        if (y !== null) window.scrollTo({ top: y, behavior: 'auto' });
+      }
+    });
+  }
+</script>
+
+<style>
+  .sheets {
+    timeline-scope: --sheet-2, --sheet-3, --sheet-4, --sheet-5;
+  }
+
+  .sheet {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* Every sheet after the hero is at least a screen tall, so it covers the
+     one beneath completely, and lands with a rounded edge and a soft shadow
+     cast up onto the sheet it is covering */
+  /* The hero runs up under the clear navbar, so the photograph reaches the
+     top of the screen. It is half a corner taller than the screen, so on
+     load the next sheet's edge sits just out of view. */
+  .sheet--hero {
+    margin-top: -5rem;
+    min-height: calc(100svh + 0.5rem);
+  }
+
+  .sheet:not(.sheet--hero) {
+    /* pinned at 4.5rem, this reaches the very bottom of the screen */
+    min-height: calc(100svh - 4.5rem);
+    margin-top: -0.5rem;
+    overflow: clip;
+    border-radius: 0.5rem 0.5rem 0 0;
+    box-shadow: 0 -10px 32px -14px rgb(10 25 47 / 0.45);
+  }
+
+  /* The closing sheet: the partner drum fills the space above the footer, centred in it */
+  /* The closing sheet ends the page, so at rest its top sits half a corner
+     under the navbar, like a pinned sheet */
+  .sheet.sheet--last {
+    justify-content: space-between;
+    min-height: calc(100svh - 4.5rem);
+  }
+
+  /* ---------- The Review sheet ---------- */
+
+  .review-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .review-actions {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  /* Phones: the pages get the height. The heading and "view all" share one
+     row, the arrows give way to swiping, and the issue title (also printed on
+     the cover) is kept for screen readers only */
+  @media (max-width: 639px) {
+    .review-head {
+      flex-direction: row;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .review-head > div:first-child {
+      flex: none;
+    }
+
+    .review-actions {
+      width: auto;
+    }
+
+    .review-actions :global(.carousel-nav) {
+      display: none;
+    }
+
+    .review-head p {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .review-link-more {
+      display: none;
+    }
+  }
+
+  /* Short phones: a tighter heading so the Review sheet still fits */
+  @media (max-width: 639px) and (max-height: 740px) {
+    #latest-publication {
+      padding-block: 1.25rem;
+    }
+
+    .review-head {
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .review-head h2 {
+      font-size: 2.25rem;
+    }
+
+    .review-head p {
+      margin-top: 0.25rem;
+      font-size: 1rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .review-layout {
+      display: grid;
+      grid-template-columns: 19rem minmax(0, 1fr);
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .review-head {
+      gap: 2rem;
+      margin-bottom: 0;
+    }
+
+    .review-head h2 {
+      font-size: 2.25rem;
+    }
+
+    .review-actions {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    /* An open two-page spread, as tall as the sheet allows */
+    .review-layout {
+      --spread: 2;
+      --spread-gap: 1.5rem;
+      --page-cap: calc((100svh - 16.5rem) * 0.8);
+    }
+  }
+
+  .sheet--last :global(#sponsors) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .is-stacking .sheet:not(.sheet--last) {
+    position: sticky;
+    /* Half a corner under the navbar, so the rounded corners tuck beneath it */
+    top: min(4.5rem, calc(100svh - var(--sheet-h, 100svh)));
+  }
+
+  /* The sheet being covered dims a little as the next one slides over it */
+  .sheet::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    pointer-events: none;
+    border-radius: inherit;
+    background: var(--color-brand-primary);
+    opacity: 0;
+  }
+
+  .sheet:nth-child(2) { view-timeline-name: --sheet-2; }
+  .sheet:nth-child(3) { view-timeline-name: --sheet-3; }
+  .sheet:nth-child(4) { view-timeline-name: --sheet-4; }
+  .sheet:nth-child(5) { view-timeline-name: --sheet-5; }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .is-stacking .sheet:not(.sheet--last)::after {
+        animation: sheet-dim linear both;
+        animation-range: entry 0% entry 100%;
+      }
+
+      .is-stacking .sheet:nth-child(1)::after { animation-timeline: --sheet-2; }
+      .is-stacking .sheet:nth-child(2)::after { animation-timeline: --sheet-3; }
+      .is-stacking .sheet:nth-child(3)::after { animation-timeline: --sheet-4; }
+      .is-stacking .sheet:nth-child(4)::after { animation-timeline: --sheet-5; }
+    }
+  }
+
+  @keyframes sheet-dim {
+    to {
+      opacity: 0.16;
+    }
+  }
+</style>

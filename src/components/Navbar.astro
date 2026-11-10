@@ -2,93 +2,642 @@
 import { Image } from 'astro:assets';
 import logo from '../assets/logo.png';
 
+interface Props {
+  /** Colour the bar starts in. The home page starts navy, over the hero. */
+  tone?: 'clear' | 'white' | 'mist' | 'steel' | 'navy';
+}
+
+const { tone = 'white' } = Astro.props;
+
 const navLinks = [
-  { href: '/our-team', label: 'Our Team' },
-  { href: '/#events', label: 'Events' },
-  { href: '/affiliations', label: 'Affiliations' },
-  { href: '/publications', label: 'Publications' },
+  { href: '/our-team', label: 'Our Team', key: 'our-team' },
+  { href: '/#events', label: 'Events', key: 'events' },
+  { href: '/affiliations', label: 'Affiliations', key: 'affiliations' },
+  { href: '/publications', label: 'Publications', key: 'publications' },
 ];
+
+const joinHref = 'https://campus.hellorubric.com/?tab=memberships&s=12537';
+
+// The page this is: its link carries the marker from the first paint
+const path = Astro.url.pathname.replace(/\/$/, '');
+const currentKey = navLinks.find((link) => link.key !== 'events' && path.startsWith(link.href))?.key;
 ---
 
-<nav class="bg-brand-secondary border-b border-gray-100 fixed inset-x-0 top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between h-20">
-      <div class="flex items-center">
-        <a href="/" class="flex items-center gap-2 group">
-          <Image 
-            src={logo} 
-            alt="FINSOC logo" 
-            class="h-12 w-auto object-contain"
-            loading="eager"
-          />
-        </a>
+<!--
+  The bar takes on the colour of the sheet beneath it, so on the home page it
+  reads as the top edge of whichever sheet is being read. A short bar, the
+  bottom stroke of the F mark, sits under the link for where you are.
+-->
+<nav class="site-nav" data-tone={tone} data-current={currentKey} aria-label="Main">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="flex h-20 items-center justify-between">
+      <a href="/" class="nav-logo" aria-label="UNSW FINSOC home">
+        <!-- The logo file is a stencil: its bars, wordmark and tagline are
+             re-inked for each bar colour, so the mark always reads -->
+        <span class="nav-logo-mark" style={`--logo-src: url(${logo.src})`} aria-hidden="true"></span>
+        <Image src={logo} alt="" class="nav-logo-fallback" loading="eager" />
+      </a>
+
+      <!-- Desktop -->
+      <div class="hidden items-center gap-8 lg:flex">
+        <div class="nav-links-wrap">
+        <ul class="nav-links" role="list">
+          {navLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="nav-link"
+                data-key={link.key}
+                aria-current={currentKey === link.key ? 'page' : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <span class="nav-marker" aria-hidden="true"></span>
+        </div>
+        <a href={joinHref} class="nav-join">JOIN NOW</a>
       </div>
 
-      <!-- Desktop Menu -->
-      <div class="hidden md:flex items-center space-x-6">
-        {navLinks.map((link) => (
-          <a
-            href={link.href}
-            class="text-gray-600 hover:text-brand-accent px-2 py-2 text-sm font-semibold transition-colors uppercase tracking-wider"
-          >
-            {link.label}
-          </a>
-        ))}
-        <a 
-          href="https://campus.hellorubric.com/?tab=memberships&s=12537"
-          class="bg-brand-primary text-brand-secondary px-6 py-2.5 rounded-[0.5rem] text-sm font-bold hover:bg-brand-accent hover:text-brand-primary transition-all shadow-md active:scale-95"
-          >
-          JOIN NOW
-          </a>
-          </div>
-
-          <!-- Mobile menu button -->
-          <div class="md:hidden flex items-center">
-          <button
-            id="mobile-menu-button"
-            class="inline-flex items-center justify-center p-2 rounded-[0.5rem] text-brand-primary hover:text-brand-accent focus:outline-none"
-            aria-controls="mobile-menu"
-            aria-expanded="false"
-          >
-          <span class="sr-only">Open main menu</span>
-          <svg class="block h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
+      <!-- Phone -->
+      <button
+        type="button"
+        class="nav-toggle lg:hidden"
+        aria-controls="nav-menu"
+        aria-expanded="false"
+        aria-label="Open menu"
+      >
+        <span class="nav-toggle-line"></span>
+        <span class="nav-toggle-line"></span>
+        <span class="nav-toggle-line"></span>
+      </button>
     </div>
   </div>
 
-  <!-- Mobile Menu -->
-  <div class="md:hidden hidden" id="mobile-menu">
-    <div class="px-4 pt-2 pb-6 space-y-1 bg-brand-secondary border-t border-gray-100 shadow-xl">
+  <!-- The phone menu drops from the bar as a navy sheet -->
+  <div class="nav-scrim lg:hidden" aria-hidden="true"></div>
+  <div id="nav-menu" class="nav-menu lg:hidden" inert>
+    <ul class="px-4 pt-4 pb-2 sm:px-6" role="list">
       {navLinks.map((link) => (
-        <a
-          href={link.href}
-          class="text-brand-primary hover:text-brand-accent block px-3 py-4 text-base font-bold border-b border-gray-50 last:border-0 uppercase tracking-widest"
-        >
-          {link.label}
-        </a>
-      ))}
-      <div class="pt-4">
-        <a 
-          href="https://campus.hellorubric.com/?tab=memberships&s=12537"
-          class="block w-full text-center bg-brand-primary text-brand-secondary px-6 py-4 rounded-[0.5rem] text-base font-bold uppercase tracking-widest"
+        <li>
+          <a
+            href={link.href}
+            class="nav-menu-link"
+            data-key={link.key}
+            aria-current={currentKey === link.key ? 'page' : undefined}
           >
-          JOIN NOW
+            {link.label.toUpperCase()}.
           </a>
-      </div>
+        </li>
+      ))}
+    </ul>
+    <div class="px-4 pt-4 pb-6 sm:px-6">
+      <a href={joinHref} class="nav-menu-join">JOIN NOW</a>
     </div>
   </div>
 </nav>
 
 <script>
-  const mobileMenuButton = document.getElementById('mobile-menu-button');
-  const mobileMenu = document.getElementById('mobile-menu');
+  const nav = document.querySelector<HTMLElement>('.site-nav');
 
-  mobileMenuButton?.addEventListener('click', () => {
-    const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
-    mobileMenuButton.setAttribute('aria-expanded', String(!isExpanded));
-    mobileMenu?.classList.toggle('hidden');
-  });
+  if (nav) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('.nav-link'));
+    const menuLinks = Array.from(nav.querySelectorAll<HTMLAnchorElement>('.nav-menu-link'));
+    const marker = nav.querySelector<HTMLElement>('.nav-marker');
+    const pageKey = nav.dataset.current || null;
+
+    /* ---------- Section marker ---------- */
+
+    let sectionKey: string | null = null;
+    let hoverKey: string | null = null;
+
+    let markerShown = false;
+    const placeMarker = () => {
+      if (!marker) return;
+      const key = hoverKey ?? sectionKey ?? pageKey;
+      const link = links.find((l) => l.dataset.key === key);
+      if (!link || !link.offsetParent) {
+        marker.style.opacity = '0';
+        markerShown = false;
+        return;
+      }
+      const x = `translateX(${link.offsetLeft}px)`;
+      if (!markerShown) {
+        // Appear under the link itself: jump there unseen, then fade in
+        marker.style.transition = 'none';
+        marker.style.transform = x;
+        void marker.offsetWidth;
+        marker.style.transition = '';
+        markerShown = true;
+      }
+      marker.style.transform = x;
+      marker.style.opacity = '1';
+    };
+
+    const markCurrent = () => {
+      for (const link of [...links, ...menuLinks]) {
+        const key = link.dataset.key;
+        if (key === pageKey) link.setAttribute('aria-current', 'page');
+        else if (key === sectionKey) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      }
+    };
+
+    for (const link of links) {
+      link.addEventListener('pointerenter', () => {
+        hoverKey = link.dataset.key ?? null;
+        placeMarker();
+      });
+      link.addEventListener('focus', () => {
+        hoverKey = link.dataset.key ?? null;
+        placeMarker();
+      });
+      link.addEventListener('blur', () => {
+        hoverKey = null;
+        placeMarker();
+      });
+    }
+    nav.querySelector('.nav-links-wrap')?.addEventListener('pointerleave', () => {
+      hoverKey = null;
+      placeMarker();
+    });
+
+    /* ---------- Tone: follow the sheet under the bar ---------- */
+
+    const sheets = Array.from(document.querySelectorAll<HTMLElement>('.sheet[data-tone]'));
+    if (sheets.length) nav.dataset.stack = '';
+
+    const update = () => {
+      if (sheets.length) {
+        const edge = nav.offsetHeight;
+        // The sheet under the bar is the last one whose top has reached its foot
+        let under = sheets[0];
+        for (const sheet of sheets) if (sheet.getBoundingClientRect().top <= edge) under = sheet;
+        nav.dataset.tone = under.dataset.tone;
+        const nextSection = under.dataset.nav ?? null;
+        if (nextSection !== sectionKey) {
+          sectionKey = nextSection;
+          markCurrent();
+        }
+      }
+      placeMarker();
+    };
+
+    // Browsers already deliver scroll events once per frame, and the check is
+    // a handful of rectangle reads, so it runs directly
+    const queue = () => update();
+
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue, { passive: true });
+    // Late-loading images change sheet heights, and so where each one pins,
+    // without any scroll: recheck whenever a sheet changes size
+    if (sheets.length && 'ResizeObserver' in window) {
+      const sizes = new ResizeObserver(queue);
+      sheets.forEach((sheet) => sizes.observe(sheet));
+    }
+    document.fonts?.ready.then(queue);
+    update();
+    // Let the first paint settle before colours and the marker start to glide
+    setTimeout(() => nav.classList.add('is-ready'), 60);
+
+    /* ---------- Phone menu ---------- */
+
+    const toggle = nav.querySelector<HTMLButtonElement>('.nav-toggle');
+    const menu = nav.querySelector<HTMLElement>('.nav-menu');
+    const scrim = nav.querySelector<HTMLElement>('.nav-scrim');
+
+    if (toggle && menu) {
+      const focusables = () =>
+        [toggle, ...Array.from(menu.querySelectorAll<HTMLElement>('a[href]'))];
+
+      const setOpen = (open: boolean, { restoreFocus = true } = {}) => {
+        nav.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        menu.inert = !open;
+        document.documentElement.classList.toggle('nav-locked', open);
+        if (open) menu.querySelector<HTMLElement>('a[href]')?.focus({ preventScroll: true });
+        else if (restoreFocus) toggle.focus({ preventScroll: true });
+      };
+
+      toggle.addEventListener('click', () => setOpen(!nav.classList.contains('is-open')));
+      scrim?.addEventListener('click', () => setOpen(false));
+      menu.addEventListener('click', (event) => {
+        if ((event.target as Element).closest('a')) setOpen(false, { restoreFocus: false });
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (!nav.classList.contains('is-open')) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          setOpen(false);
+        } else if (event.key === 'Tab') {
+          // Keep focus inside the open menu
+          const items = focusables();
+          const first = items[0];
+          const last = items[items.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      });
+
+      // Widening past the phone layout closes the menu
+      window.matchMedia('(min-width: 1024px)').addEventListener('change', (mq) => {
+        if (mq.matches && nav.classList.contains('is-open')) setOpen(false, { restoreFocus: false });
+      });
+    }
+
+    reduceMotion.addEventListener?.('change', placeMarker);
+  }
 </script>
+
+<style>
+  .site-nav {
+    --nav-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    background: var(--nav-bg);
+    color: var(--nav-ink);
+    box-shadow: inset 0 -1px 0 var(--nav-rule);
+  }
+
+  /* ---------- Tones: one per sheet colour ---------- */
+
+  .site-nav[data-tone='white'] {
+    --logo-top: #90b5c5;
+    --logo-mid: #5d7d96;
+    --logo-foot: #1b2f48;
+    --logo-word: #1b2f48;
+    --logo-tag: #90b5c5;
+    --nav-bg: var(--color-brand-secondary);
+    --nav-ink: var(--color-brand-primary);
+    --nav-rule: rgb(10 25 47 / 0.08);
+    --join-bg: var(--color-brand-primary);
+    --join-ink: var(--color-brand-secondary);
+  }
+
+  /* On mist the pale top bar and tagline deepen a step so they still read */
+  .site-nav[data-tone='mist'] {
+    --logo-top: #90b5c5;
+    --logo-mid: #557590;
+    --logo-foot: #1b2f48;
+    --logo-word: #1b2f48;
+    --logo-tag: #557590;
+    --nav-bg: var(--color-mist);
+    --nav-ink: var(--color-brand-primary);
+    --nav-rule: rgb(10 25 47 / 0.08);
+    --join-bg: var(--color-brand-primary);
+    --join-ink: var(--color-brand-secondary);
+  }
+
+  /* On steel the bars step mist, steel-light, navy, and the words go white */
+  .site-nav[data-tone='steel'] {
+    --logo-top: #eaf1f4;
+    --logo-mid: #90b5c5;
+    --logo-foot: #0a192f;
+    --logo-word: #ffffff;
+    --logo-tag: #eaf1f4;
+    --nav-bg: var(--color-steel);
+    --nav-ink: var(--color-brand-secondary);
+    --nav-rule: rgb(255 255 255 / 0.12);
+    --join-bg: var(--color-brand-accent);
+    --join-ink: var(--color-brand-primary);
+  }
+
+  /* Clear: over the home page's hero the bar has no ground of its own. The
+     hero's photograph runs up behind it and the logo, links and JOIN NOW
+     float on it in the reversed inks. */
+  .site-nav[data-tone='clear'] {
+    --logo-top: #90b5c5;
+    --logo-mid: #5d7d96;
+    --logo-foot: #ffffff;
+    --logo-word: #ffffff;
+    --logo-tag: #90b5c5;
+    --nav-bg: transparent;
+    --nav-ink: var(--color-brand-secondary);
+    --nav-rule: transparent;
+    --join-bg: var(--color-brand-accent);
+    --join-ink: var(--color-brand-primary);
+  }
+
+  /* On navy: the reversed logo's own inks */
+  .site-nav[data-tone='navy'] {
+    --logo-top: #90b5c5;
+    --logo-mid: #5d7d96;
+    --logo-foot: #ffffff;
+    --logo-word: #ffffff;
+    --logo-tag: #90b5c5;
+    --nav-bg: var(--color-brand-primary);
+    --nav-ink: var(--color-brand-secondary);
+    --nav-rule: rgb(255 255 255 / 0.08);
+    --join-bg: var(--color-brand-accent);
+    --join-ink: var(--color-brand-primary);
+  }
+
+  /* Over the home page's sheets the bar is the sheet's own top edge: no rule */
+  .site-nav[data-stack] {
+    --nav-rule: transparent;
+  }
+
+  .site-nav.is-ready {
+    transition:
+      background-color 0.4s var(--nav-ease),
+      color 0.4s var(--nav-ease),
+      box-shadow 0.4s var(--nav-ease);
+  }
+
+  .site-nav :focus-visible {
+    outline: 2px solid var(--nav-ink);
+    outline-offset: 4px;
+    border-radius: 0.5rem;
+  }
+
+  /* ---------- Logo: one stencil, re-inked per bar colour ----------
+     Five inks: the F mark's top bar, middle bar and foot, the INSOC
+     wordmark, and the tagline. On white they are the logo's own colours. */
+
+  @property --logo-top { syntax: '<color>'; inherits: true; initial-value: #90b5c5; }
+  @property --logo-mid { syntax: '<color>'; inherits: true; initial-value: #5d7d96; }
+  @property --logo-foot { syntax: '<color>'; inherits: true; initial-value: #1b2f48; }
+  @property --logo-word { syntax: '<color>'; inherits: true; initial-value: #1b2f48; }
+  @property --logo-tag { syntax: '<color>'; inherits: true; initial-value: #90b5c5; }
+
+  .nav-logo {
+    display: block;
+    min-width: 0;
+  }
+
+  /* 3rem tall, narrowing on small phones so the menu button keeps its room */
+  .nav-logo-mark {
+    display: block;
+    width: min(21.4rem, calc(100vw - 6.5rem));
+    aspect-ratio: 1333 / 187;
+    /* Bars on the left, stepped top to bottom; wordmark; tagline */
+    background:
+      linear-gradient(to right, transparent 0 14%, var(--logo-word) 14% 74.5%, var(--logo-tag) 74.5%),
+      linear-gradient(to bottom, var(--logo-top) 0 32%, var(--logo-mid) 32% 68%, var(--logo-foot) 68%);
+    -webkit-mask: var(--logo-src) center / 100% 100% no-repeat;
+    mask: var(--logo-src) center / 100% 100% no-repeat;
+  }
+
+  .is-ready .nav-logo-mark {
+    transition:
+      --logo-top 0.4s var(--nav-ease),
+      --logo-mid 0.4s var(--nav-ease),
+      --logo-foot 0.4s var(--nav-ease),
+      --logo-word 0.4s var(--nav-ease),
+      --logo-tag 0.4s var(--nav-ease);
+  }
+
+  .nav-logo-fallback {
+    display: none;
+    width: min(21.4rem, calc(100vw - 6.5rem));
+    height: auto;
+  }
+
+  /* High-contrast modes drop backgrounds: show the plain logo instead */
+  @media (forced-colors: active) {
+    .nav-logo-mark {
+      display: none;
+    }
+
+    .nav-logo-fallback {
+      display: block;
+    }
+  }
+
+  /* ---------- Desktop links and the marker ---------- */
+
+  .nav-links-wrap {
+    position: relative;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: inherit;
+  }
+
+  /* The bottom stroke of the F: a short solid block under the start of the
+     current link, the way the F's foot sits under its stem */
+  .nav-marker {
+    position: absolute;
+    left: 0;
+    bottom: -0.125rem;
+    width: 1.5rem;
+    height: 4px;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .is-ready .nav-marker {
+    transition:
+      transform 0.45s var(--nav-ease),
+      opacity 0.3s var(--nav-ease);
+  }
+
+  .nav-join {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border-radius: 0.5rem;
+    background: var(--join-bg);
+    color: var(--join-ink);
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    transition:
+      background-color 0.4s var(--nav-ease),
+      color 0.4s var(--nav-ease),
+      transform 0.25s var(--nav-ease);
+  }
+
+  .nav-join:hover {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+    transform: translateY(-1px);
+  }
+
+  .site-nav:is([data-tone='clear'], [data-tone='steel'], [data-tone='navy']) .nav-join:hover {
+    background: var(--color-brand-secondary);
+  }
+
+  .nav-join:active {
+    transform: translateY(0);
+  }
+
+  /* ---------- Phone: menu button ---------- */
+
+  .nav-toggle {
+    position: relative;
+    flex: none;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 3rem;
+    height: 3rem;
+    margin-right: -0.5rem;
+    padding: 0 0.625rem;
+    border-radius: 0.5rem;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  @media (min-width: 1024px) {
+    .nav-toggle {
+      display: none;
+    }
+  }
+
+  .nav-toggle-line {
+    display: block;
+    height: 2.5px;
+    background: currentColor;
+    transition:
+      transform 0.4s var(--nav-ease),
+      opacity 0.25s var(--nav-ease);
+  }
+
+  .is-open .nav-toggle-line:nth-child(1) {
+    transform: translateY(calc(0.4rem + 2.5px)) rotate(45deg);
+  }
+
+  .is-open .nav-toggle-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .is-open .nav-toggle-line:nth-child(3) {
+    transform: translateY(calc(-0.4rem - 2.5px)) rotate(-45deg);
+  }
+
+  /* While the menu is open the bar is navy, joined to the sheet it drops */
+  .site-nav.is-open {
+    --nav-bg: var(--color-brand-primary);
+    --nav-ink: var(--color-brand-secondary);
+    --nav-rule: transparent;
+  }
+
+  .site-nav.is-open {
+    --logo-top: #90b5c5;
+    --logo-mid: #5d7d96;
+    --logo-foot: #ffffff;
+    --logo-word: #ffffff;
+    --logo-tag: #90b5c5;
+  }
+
+  /* ---------- Phone: the menu sheet ---------- */
+
+  .nav-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: calc(100svh - 5rem);
+    overflow-y: auto;
+    border-radius: 0 0 0.5rem 0.5rem;
+    background: var(--color-brand-primary);
+    color: var(--color-brand-secondary);
+    box-shadow: 0 14px 32px -14px rgb(10 25 47 / 0.6);
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+    transition:
+      clip-path 0.45s var(--nav-ease),
+      visibility 0s linear 0.45s;
+  }
+
+  .is-open .nav-menu {
+    clip-path: inset(0 0 -2rem 0);
+    visibility: visible;
+    transition:
+      clip-path 0.45s var(--nav-ease),
+      visibility 0s;
+  }
+
+  .nav-menu-link {
+    display: flex;
+    align-items: center;
+    min-height: 4rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    font-size: 2.25rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: var(--color-brand-secondary);
+  }
+
+  .nav-menu-link[aria-current] {
+    color: var(--color-brand-accent);
+  }
+
+  .nav-menu-join {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.5rem;
+    border-radius: 0.5rem;
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+  }
+
+  .nav-menu-join:active {
+    background: var(--color-brand-secondary);
+  }
+
+  .nav-scrim {
+    position: fixed;
+    inset: 5rem 0 0;
+    background: rgb(10 25 47 / 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s var(--nav-ease);
+  }
+
+  .is-open .nav-scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  :global(html.nav-locked) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-nav.is-ready,
+    .is-ready .nav-logo-mark,
+    .is-ready .nav-marker,
+    .nav-join,
+    .nav-toggle-line,
+    .nav-menu,
+    .is-open .nav-menu,
+    .nav-scrim {
+      transition: none;
+    }
+  }
+</style>
