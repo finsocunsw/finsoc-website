@@ -2,203 +2,632 @@
 import Layout from '../layouts/Layout.astro';
 import TeamMemberCard from '../components/TeamMemberCard.astro';
 import { getTeamMembers, getTeamYears, type TeamMember } from '../utils/sanity';
-import { getImage } from 'astro:assets';
-import bgImage from '../assets/unsw-mainwalkway.png';
+import { directorGroups, executiveRows } from '../utils/team';
 
-const optimizedBg = await getImage({ src: bgImage, format: 'webp' });
+// Years come newest first; the page opens on the latest team uploaded
+const years = (await getTeamYears()) as number[];
+const latest = years[0] ?? new Date().getFullYear();
+const asked = Number(Astro.url.searchParams.get('year'));
+const year = years.includes(asked) ? asked : latest;
+const directorsOpen = Astro.url.searchParams.get('directors') === '1';
 
-const currentYear = new Date().getFullYear();
-const searchParams = Astro.url.searchParams;
-const selectedYear = parseInt(searchParams.get('year') || currentYear.toString());
+const members = (await getTeamMembers(year)) as TeamMember[];
+const rows = executiveRows(members);
+const groups = directorGroups(members);
+const directorCount = groups.reduce((n, g) => n + g.members.length, 0);
 
-const teamMembers = await getTeamMembers(selectedYear);
-const availableYears = await getTeamYears();
+const yearHref = (y: number, withDirectors = directorsOpen) => {
+  const params = new URLSearchParams();
+  if (y !== latest) params.set('year', String(y));
+  if (withDirectors) params.set('directors', '1');
+  const query = params.toString();
+  return `/our-team${query ? `?${query}` : ''}`;
+};
 
-// Fallback if current year has no members but we have other years
-let displayYear = selectedYear;
-let finalTeam = teamMembers;
-
-if (teamMembers.length === 0 && availableYears.length > 0) {
-  if (!searchParams.has('year')) {
-    displayYear = availableYears[0];
-    finalTeam = await getTeamMembers(displayYear);
-  }
-}
-
-// Grouping Logic
-const execs = finalTeam.filter((m: TeamMember) => m.category === 'exec');
-const directors = finalTeam.filter((m: TeamMember) => m.category === 'director');
-
-// 1. Group Execs by Rank
-const presidents = execs.filter(m => m.rank === '1_president');
-const vps = execs.filter(m => m.rank === '2_vp');
-const otherExecs = execs.filter(m => m.rank === '3_officer');
-
-// 2. Group Directors by Portfolio
-const portfolios = [...new Set(directors.map(m => m.portfolio).filter(Boolean))] as string[];
-const directorsByPortfolio = portfolios.map(portfolio => ({
-  name: portfolio,
-  members: directors.filter(m => m.portfolio === portfolio).sort((a, b) => (a.order || 99) - (b.order || 99))
-}));
-
-const sortByOrder = (a: TeamMember, b: TeamMember) => (a.order || 99) - (b.order || 99);
-presidents.sort(sortByOrder);
-vps.sort(sortByOrder);
-otherExecs.sort(sortByOrder);
+// Earlier and later years, oldest at the top, so the list reads down to the one showing
+const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
 ---
 
-<Layout title={`Meet the Team ${displayYear} | FinSoc`} mainClass="bg-transparent">
-  <!-- Parallax Background Image -->
-  <div class="fixed inset-0 pointer-events-none z-0 blur-[4px] overflow-hidden">
-    <div 
-      id="parallax-bg"
-      class="w-full h-[130vh] bg-cover bg-center bg-repeat transition-transform duration-100 ease-out parallax-optimized"
-      style={`background-image: url('${optimizedBg.src}');`}
-    ></div>
-  </div>
-
-  <section class="pt-40 pb-32 relative overflow-hidden z-10">
-    <!-- Background Decor -->
-    <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:64px_64px] -z-10"></div>
-
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row justify-between items-end gap-12 mb-32">
-        <div class="max-w-2xl text-left">
-          <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-6 uppercase" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">OUR LEADERSHIP</h2>
-          <h1 class="text-6xl md:text-8xl font-black text-white tracking-tight leading-[0.9]" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">
-            MEET THE <span class="text-white">{displayYear}</span> TEAM.
-          </h1>
-        </div>
-        
-        {availableYears.length > 1 && (
-          <div class="flex flex-wrap gap-3">
-            {availableYears.map((y: number) => (
-              <a 
-                href={`/our-team?year=${y}`}
-                class={`px-6 py-2 rounded-[0.5rem] font-black text-xs tracking-widest transition-all duration-300 ${y === displayYear ? 'bg-brand-primary text-white scale-110 shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-brand-primary'}`}
-              >
-                {y}
-              </a>
-            ))}
-          </div>
-        )}
+<Layout title={`Our Team ${year} | UNSW FINSOC`} navTone="navy" pageClass="bg-brand-primary" mainClass="bg-brand-primary">
+  <!--
+    The navy bar runs on down the left as a rail, so bar and rail together
+    draw the F of the logo: the page's controls sit in its stem, and the
+    executive is set into the white sheet it frames.
+  -->
+  <section class="sheet team" data-tone="navy">
+    <header class="team-rail">
+      <div class="team-intro">
+        <h1 class="team-title">Our team</h1>
       </div>
 
-      <!-- Executives Section -->
-      <div class="mb-56">
-        <div class="flex items-center gap-6 mb-24">
-           <div class="flex flex-col">
-             <h2 class="text-5xl font-black text-brand-accent tracking-tight" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">EXECUTIVE BOARD</h2>
-           </div>
-           <div class="h-px bg-black flex-grow mt-6"></div>
+      <nav class="years" aria-label="Team year">
+        {others.length > 0 ? (
+          <>
+            <ul class="years-list" id="team-years" role="list">
+              {others.map((y) => (
+                <li class="years-option">
+                  <a href={yearHref(y)}>{y}</a>
+                </li>
+              ))}
+            </ul>
+            <button class="years-current" type="button" aria-expanded="false" aria-controls="team-years">
+              <span class="sr-only">Showing </span>
+              <span class="years-figure">{year}</span>
+              <span class="sr-only">, choose another year</span>
+              <svg class="years-chevron" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m6 15 6-6 6 6" />
+              </svg>
+            </button>
+          </>
+        ) : (
+          <span class="years-figure">{year}</span>
+        )}
+      </nav>
+
+      <a
+        class="directors-switch"
+        href={yearHref(year, !directorsOpen)}
+        role="switch"
+        aria-checked={String(directorsOpen)}
+        aria-controls="directors"
+      >
+        <span class="switch" aria-hidden="true"><span class="switch-knob"></span></span>
+        <span class="directors-label">Directors</span>
+        {directorCount > 0 && <span class="directors-count">{directorCount}</span>}
+      </a>
+    </header>
+
+    <div class="team-board">
+      <h2 class="sr-only">Executive</h2>
+      {rows.length > 0 ? (
+        <div class="team-seats team-group">
+          {rows.map((row, i) => (
+            <ul class="team-row" role="list" aria-label={i === 0 ? 'Executive officers' : 'Vice presidents'}>
+              {row.map((member) => (
+                <TeamMemberCard member={member} eager />
+              ))}
+            </ul>
+          ))}
         </div>
+      ) : (
+        <p class="team-empty">No executive listed for {year} yet.</p>
+      )}
+    </div>
+  </section>
 
-        {/* Presidents - Highlighted layout */}
-        {presidents.length > 0 && (
-          <div class="mb-24 max-w-3xl mx-auto">
-            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center" >CO-PRESIDENTS</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-12 lg:gap-16">
-              {presidents.map((member) => (
-                <TeamMemberCard member={member} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Vice Presidents */}
-        {vps.length > 0 && (
-          <div class="max-w-2xl mx-auto mb-24">
-            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center">VICE PRESIDENTS</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-10">
-              {vps.map((member) => (
-                <TeamMemberCard member={member} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Other Execs */}
-        {otherExecs.length > 0 && (
-          <div class="max-w-2xl mx-auto">
-            <h3 class="text-xs font-black text-brand-primary uppercase tracking-[0.3em] mb-12 text-center">EXECUTIVE OFFICERS</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-10 lg:gap-12">
-              {otherExecs.map((member) => (
-                <TeamMemberCard member={member} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {execs.length === 0 && (
-          <div class="py-20 text-center bg-gray-50 rounded-[0.5rem] border-4 border-dashed border-gray-100">
-            <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No executive data for {displayYear}.</p>
-          </div>
-        )}
-      </div>
-
-      <!-- Directors Section -->
-      <div class="relative">
-        <!-- Vertical divider for desktop -->
-        <div class="hidden md:block absolute left-1/2 top-40 bottom-0 w-px bg-black -translate-x-1/2"></div>
-
-        <div class="flex items-center gap-6 mb-24">
-           <div class="flex flex-col">
-             <h2 class="text-5xl font-black text-brand-accent tracking-tight" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">PORTFOLIO DIRECTORS</h2>
-           </div>
-           <div class="h-px bg-black flex-grow mt-6"></div>
-        </div>
-        
-        {directorsByPortfolio.length > 0 ? (
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-20 lg:gap-x-32 gap-y-32">
-            {directorsByPortfolio.map((portfolio) => (
-              <div class="space-y-12">
-                <div class="flex items-center gap-4">
-                  <h3 class="text-base font-black text-brand-primary uppercase tracking-[0.4em] whitespace-nowrap">{portfolio.name}</h3>
-                  <div class="h-px bg-black w-16"></div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                  {portfolio.members.map((member) => (
-                    <TeamMemberCard member={member} />
+  <section class="directors" id="directors" aria-labelledby="directors-title" data-open={directorsOpen || undefined}>
+    <div class="directors-sheet">
+      <div class="directors-wrap">
+        <h2 class="directors-title" id="directors-title">Portfolio directors.</h2>
+        {groups.length > 0 ? (
+          <div class="portfolios team-group">
+            {groups.map((group) => (
+              <section class="portfolio" aria-labelledby={`portfolio-${group.name}`}>
+                <h3 class="portfolio-name" id={`portfolio-${group.name}`}>{group.name}</h3>
+                <ul class="portfolio-members" role="list">
+                  {group.members.map((member) => (
+                    <TeamMemberCard member={member} size="sm" heading="h4" showRole={member.role !== group.name} />
                   ))}
-                </div>
-              </div>
+                </ul>
+              </section>
             ))}
           </div>
         ) : (
-          <div class="py-20 text-center bg-black rounded-[0.5rem] border-4 border-dashed border-gray-100">
-            <p class="text-gray-400 font-bold uppercase tracking-widest text-sm">No director data for {displayYear}.</p>
-          </div>
+          <p class="team-empty">No directors listed for {year} yet.</p>
         )}
       </div>
     </div>
   </section>
 </Layout>
 
-<script is:inline>
-  function initParallax() {
-    const parallaxBg = document.getElementById('parallax-bg');
-    if (!parallaxBg) return;
+<script>
+  const years = document.querySelector<HTMLElement>('.years');
+  const button = years?.querySelector<HTMLButtonElement>('.years-current');
 
-    let ticking = false;
-    let scrollY = 0;
-
-    function updateParallax() {
-      // Scroll speed: 0.05x the page scroll speed
-      parallaxBg.style.transform = `translate3d(0, ${scrollY * -0.05}px, 0)`;
-      ticking = false;
-    }
-
-    window.addEventListener('scroll', () => {
-      scrollY = window.scrollY;
-      if (!ticking) {
-        window.requestAnimationFrame(updateParallax);
-        ticking = true;
+  // Other years rise above the figure on hover or focus; a tap or click pins them open
+  if (years && button) {
+    const setOpen = (open: boolean) => {
+      years.toggleAttribute('data-open', open);
+      button.setAttribute('aria-expanded', String(open));
+    };
+    button.addEventListener('click', () => setOpen(!years.hasAttribute('data-open')));
+    years.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && years.hasAttribute('data-open')) {
+        setOpen(false);
+        button.focus();
       }
-    }, { passive: true });
+    });
+    document.addEventListener('pointerdown', (event) => {
+      if (!years.contains(event.target as Node)) setOpen(false);
+    });
   }
 
-  // Run on load and after swaps
-  initParallax();
-  document.addEventListener('astro:page-load', initParallax);
+  // The switch is a link that reloads with directors on or off; with script
+  // running it unfolds them in place and keeps the address and year links in step
+  const toggle = document.querySelector<HTMLAnchorElement>('.directors-switch');
+  const directors = document.querySelector<HTMLElement>('#directors');
+
+  if (toggle && directors) {
+    const withDirectors = (href: string, open: boolean) => {
+      const url = new URL(href, location.href);
+      if (open) url.searchParams.set('directors', '1');
+      else url.searchParams.delete('directors');
+      return url.pathname + url.search;
+    };
+
+    const setDirectors = (open: boolean) => {
+      directors.toggleAttribute('data-open', open);
+      toggle.setAttribute('aria-checked', String(open));
+      history.replaceState(history.state, '', withDirectors(location.href, open));
+      toggle.href = withDirectors(location.href, !open);
+      for (const link of document.querySelectorAll<HTMLAnchorElement>('.years-option a')) {
+        link.href = withDirectors(link.href, open);
+      }
+    };
+
+    toggle.addEventListener('click', (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      setDirectors(toggle.getAttribute('aria-checked') !== 'true');
+    });
+    // A switch answers to Space as well as Enter
+    toggle.addEventListener('keydown', (event) => {
+      if (event.key === ' ') {
+        event.preventDefault();
+        toggle.click();
+      }
+    });
+  }
 </script>
+
+<style>
+  .team {
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --pad: 1rem;
+    --gap: clamp(1rem, 2.2vw, 1.75rem);
+    --row-gap: 2.5rem;
+    --board-top: 2rem;
+    --board-foot: 2.5rem;
+    --per-row: 2;
+    --seat-cap: 100%;
+
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(var(--pad), 1fr)
+      [content-start] minmax(0, calc(80rem - 2 * var(--pad)))
+      [content-end] minmax(var(--pad), 1fr)
+      [full-end];
+    background: var(--color-brand-primary);
+    color: var(--color-brand-secondary);
+  }
+
+  .team :global(::selection),
+  .directors :global(::selection) {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+  }
+
+  @media (min-width: 640px) {
+    .team {
+      --pad: 1.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .team {
+      --per-row: 4;
+    }
+  }
+
+  /* ---------- The rail: title, year and the directors switch ----------
+     On phones and tablets it is a navy band under the bar; from 1024px it
+     turns down the left as the F's stem. */
+
+  .team-rail {
+    grid-column: content;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'intro years'
+      'switch switch';
+    align-items: end;
+    gap: 1.5rem 1.25rem;
+    padding-block: 1.75rem 2rem;
+  }
+
+  .team-intro {
+    grid-area: intro;
+  }
+
+  .team-title {
+    font-size: clamp(2.5rem, 7vw, 4rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+
+  /* ---------- Year ---------- */
+
+  .years {
+    grid-area: years;
+    position: relative;
+    justify-self: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .years-figure {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .years-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 0.5rem;
+  }
+
+  .years-chevron {
+    width: 1.375rem;
+    height: 1.375rem;
+    fill: none;
+    stroke: var(--color-steel-light);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.4s var(--ease);
+  }
+
+  /* The other years stack above the figure, oldest at the top, and are
+     wiped up into view from its top edge */
+  .years-list {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    display: grid;
+    justify-items: end;
+    padding-bottom: 0.25rem;
+    clip-path: inset(100% 0 0 0);
+    opacity: 0;
+    transition:
+      clip-path 0.5s var(--ease),
+      opacity 0.35s var(--ease);
+  }
+
+  .years-option a {
+    display: block;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.5rem;
+    color: var(--color-steel-light);
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+    transition: color 0.25s var(--ease);
+  }
+
+  .years-option a:hover {
+    color: var(--color-brand-secondary);
+  }
+
+  .years:is(:hover, :focus-within, [data-open]) .years-list {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+
+  .years:is(:hover, :focus-within, [data-open]) .years-chevron {
+    transform: translateY(-0.25rem);
+  }
+
+  .team-rail :focus-visible {
+    outline: 2px solid var(--color-brand-secondary);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Directors switch ---------- */
+
+  .directors-switch {
+    grid-area: switch;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.875rem;
+    justify-self: start;
+    min-height: 2.75rem;
+    margin-left: -0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    color: inherit;
+    text-decoration: none;
+    user-select: none;
+  }
+
+  .switch {
+    position: relative;
+    flex: none;
+    width: 2.75rem;
+    height: 1.5rem;
+    border: 2px solid var(--color-brand-secondary);
+    border-radius: 9999px;
+    transition:
+      background-color 0.3s var(--ease),
+      border-color 0.3s var(--ease);
+  }
+
+  .switch-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background: var(--color-brand-secondary);
+    transition:
+      transform 0.4s var(--ease),
+      background-color 0.3s var(--ease);
+  }
+
+  .directors-switch:hover .switch {
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .directors-switch[aria-checked='true'] .switch {
+    border-color: var(--color-brand-accent);
+    background: var(--color-brand-accent);
+  }
+
+  .directors-switch[aria-checked='true'] .switch-knob {
+    background: var(--color-brand-primary);
+    transform: translateX(1.25rem);
+  }
+
+  .directors-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .directors-count {
+    min-width: 1.75rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.5rem;
+    background: rgb(255 255 255 / 0.12);
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- The white sheet and the executive ---------- */
+
+  .team-board {
+    grid-column: full;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-content: start;
+    padding-block: var(--board-top) var(--board-foot);
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: var(--color-brand-secondary);
+    color: var(--color-brand-primary);
+  }
+
+  .team-board > * {
+    grid-column: 2;
+  }
+
+  .team-seats {
+    display: grid;
+    gap: var(--row-gap);
+  }
+
+  /* Four seats a row (two on phones), each as wide as the row allows but
+     never so tall that both rows can't share the first screen. A row with
+     an empty seat stays centred under the one above it. */
+  .team-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--row-gap) var(--gap);
+  }
+
+  .team-row > :global(.member) {
+    flex: 0 0
+      min(calc((100% - (var(--per-row) - 1) * var(--gap)) / var(--per-row)), var(--seat-cap));
+  }
+
+  .team-empty {
+    padding: 4rem 1.5rem;
+    border: 2px dashed rgb(85 117 144 / 0.3);
+    border-radius: 0.5rem;
+    color: var(--color-steel);
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Desktop: the F ---------- */
+
+  @media (min-width: 1024px) {
+    .team {
+      --pad: 2rem;
+      --rail: clamp(14rem, 21vw, 18rem);
+      /* Room for a LinkedIn line to rise under a role, scaled card and all */
+      --row-gap: 3rem;
+      --board-top: clamp(1.5rem, 4svh, 2.75rem);
+      /* Name and role under each portrait, the gap between rows, and a
+         little air above the fold */
+      --chrome: calc(5rem + var(--board-top) + 2 * 4rem + var(--row-gap) + 1.5rem);
+      /* Two 4:5 rows in what's left of the screen */
+      --seat-cap: max(8rem, (100svh - var(--chrome)) * 0.4);
+
+      /* The white sheet reaches the foot of the screen however tall it is */
+      min-height: calc(100svh - 5rem);
+      grid-template-columns:
+        [full-start] minmax(var(--pad), 1fr)
+        [content-start] var(--rail)
+        [board-start] minmax(0, calc(80rem - 2 * var(--pad) - var(--rail)))
+        [content-end] minmax(var(--pad), 1fr)
+        [full-end];
+    }
+
+    .team-rail {
+      grid-row: 1;
+      grid-column: content-start / board-start;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.25rem;
+      padding: var(--board-top) 2rem var(--board-foot) 0;
+    }
+
+    .team-title {
+      font-size: clamp(2.75rem, 4.4vw, 4.25rem);
+    }
+
+    .years {
+      justify-self: auto;
+      margin-top: auto;
+    }
+
+    .years-list {
+      right: auto;
+      left: 0;
+      justify-items: start;
+    }
+
+    .years-option a {
+      margin-left: -0.375rem;
+    }
+
+    .team-board {
+      grid-row: 1;
+      grid-column: board-start / full-end;
+      border-radius: 0.5rem 0 0 0.5rem;
+    }
+
+    .team-board > * {
+      grid-column: 1;
+      padding-left: clamp(1.5rem, 3vw, 2.5rem);
+    }
+  }
+
+  /* ---------- Directors: a mist sheet unfolding under the executive ---------- */
+
+  .directors {
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --gap: clamp(1rem, 2.2vw, 2rem);
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    color: var(--color-brand-primary);
+    transition:
+      grid-template-rows 0.6s var(--ease),
+      visibility 0s linear 0.6s;
+  }
+
+  .directors[data-open] {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition:
+      grid-template-rows 0.6s var(--ease),
+      visibility 0s;
+  }
+
+  .directors-sheet {
+    min-height: 0;
+    overflow: hidden;
+    background: var(--color-mist);
+    box-shadow: 0 -10px 32px -14px rgb(10 25 47 / 0.45);
+  }
+
+  .directors-wrap {
+    max-width: 80rem;
+    margin-inline: auto;
+    padding: clamp(3rem, 6vw, 4.5rem) 1rem clamp(3.5rem, 7vw, 6rem);
+  }
+
+  @media (min-width: 640px) {
+    .directors-wrap {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .directors-wrap {
+      padding-inline: 2rem;
+    }
+  }
+
+  .directors-title {
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(2.25rem, 4vw, 3rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+
+  .portfolios {
+    display: grid;
+  }
+
+  /* One portfolio a row: its name on the left, its directors across */
+  .portfolio {
+    display: grid;
+    gap: 1.25rem var(--gap);
+    padding-block: 1.75rem;
+    border-top: 1px solid rgb(10 25 47 / 0.12);
+  }
+
+  .portfolio-name {
+    font-size: 1.125rem;
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .portfolio-members {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.25rem var(--gap);
+  }
+
+  @media (min-width: 640px) {
+    .portfolio-members {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .portfolio {
+      grid-template-columns: 14rem minmax(0, 1fr);
+    }
+
+    .portfolio-members {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .years-list,
+    .years-chevron,
+    .switch,
+    .switch-knob,
+    .directors,
+    .directors[data-open] {
+      transition: none;
+    }
+  }
+</style>

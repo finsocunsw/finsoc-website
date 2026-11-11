@@ -1,62 +1,264 @@
 ---
-import { Image } from 'astro:assets';
 import { urlFor, type TeamMember } from '../utils/sanity';
 
 interface Props {
   member: TeamMember;
+  /** Directors sit smaller than the executive */
+  size?: 'lg' | 'sm';
+  /** The first row loads at once; everyone else as they near the screen */
+  eager?: boolean;
+  /** Off where the role only repeats the heading above, as a director's portfolio does */
+  showRole?: boolean;
+  /** h3 on the executive board; h4 under a director's portfolio heading */
+  heading?: 'h3' | 'h4';
 }
 
-const { member } = Astro.props;
+const { member, size = 'lg', eager = false, showRole = true, heading: Heading = 'h3' } = Astro.props;
+
+const widths = size === 'lg' ? [360, 540, 720, 960] : [240, 360, 480];
+const sizes =
+  size === 'lg'
+    ? '(min-width: 1280px) 18rem, (min-width: 768px) 22vw, 46vw'
+    : '(min-width: 1280px) 14rem, (min-width: 640px) 26vw, 46vw';
+
+// 4:5 crops from Sanity, honouring any hotspot an editor set
+const crop = (w: number) =>
+  urlFor(member.image).width(w).height(Math.round(w * 1.25)).fit('crop').auto('format').quality(80).url();
+
+const src = member.image ? crop(widths[1]) : null;
+const srcset = member.image ? widths.map((w) => `${crop(w)} ${w}w`).join(', ') : undefined;
+
+const initials = member.name
+  .split(/\s+/)
+  .map((part) => part[0])
+  .slice(0, 2)
+  .join('');
+
+const Tag = member.linkedin ? 'a' : 'div';
+const linkProps = member.linkedin
+  ? { href: member.linkedin, target: '_blank', rel: 'noopener noreferrer' }
+  : {};
 ---
 
-<div class="group relative overflow-hidden rounded-[0.5rem] bg-gray-50 border border-black shadow-md transition-all duration-500 hover:shadow-2xl">
-  <div class="aspect-[4/5] w-full overflow-hidden">
-    <Image
-      src={urlFor(member.image).width(600).height(750).url()}
-      alt={member.name}
-      width={600}
-      height={750}
-      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-    />
-  </div>
-
-  <!-- Info Overlay (Visible by default, fades out on hover) -->
-  <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-primary/90 via-brand-primary/40 to-transparent p-8 pt-20 transition-opacity duration-300 group-hover:opacity-0">
-    <div class="flex items-center gap-3 mb-2">
-      <span class="text-brand-accent font-black text-[10px] uppercase tracking-[0.2em]">{member.role}</span>
-    </div>
-    <h3 class="text-2xl font-black text-white leading-tight">{member.name}</h3>
-  </div>
-
-  <!-- Bio/LinkedIn Overlay (Hidden by default, fades in on hover with delay) -->
-  <div class="absolute inset-0 flex flex-col justify-center bg-brand-primary/95 p-8 opacity-0 transition-opacity duration-500 delay-300 group-hover:opacity-100">
-    <div class="mb-4">
-      <div class="flex items-center gap-3 mb-2">
-        <span class="text-brand-accent font-black text-[10px] uppercase tracking-[0.2em]">{member.role}</span>
-      </div>
-      <h3 class="text-2xl font-black text-white leading-tight mb-4">{member.name}</h3>
-      
-      {member.bio && (
-        <p class="text-gray-300 font-medium text-sm leading-relaxed line-clamp-6 mb-8">
-          {member.bio}
-        </p>
+<li class="member" data-size={size}>
+  <Tag class="member-card" {...linkProps}>
+    <div class="member-frame">
+      {src ? (
+        <img
+          src={src}
+          srcset={srcset}
+          sizes={sizes}
+          width="720"
+          height="900"
+          alt=""
+          loading={eager ? 'eager' : 'lazy'}
+          fetchpriority={eager ? 'high' : undefined}
+          decoding="async"
+        />
+      ) : (
+        <span class="member-initials" aria-hidden="true">{initials}</span>
       )}
     </div>
-
-    {member.linkedin && (
-      <div class="mt-auto pt-6 border-t border-white/10">
-        <a
-          href={member.linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex items-center gap-2 text-white font-black text-xs tracking-[0.1em] hover:text-brand-accent transition-colors group/link"
-        >
-          LINKEDIN PROFILE
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover/link:translate-x-1 transition-transform">
-            <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+    <div class="member-text">
+      <Heading class="member-name">{member.name}</Heading>
+      {showRole && <p class="member-role">{member.role}</p>}
+      {member.linkedin && (
+        <span class="member-linkedin">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />
           </svg>
-        </a>
-      </div>
-    )}
-  </div>
-</div>
+          LinkedIn
+          <span class="sr-only">(opens in a new tab)</span>
+        </span>
+      )}
+    </div>
+  </Tag>
+</li>
+
+<style>
+  .member {
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    list-style: none;
+    transition: opacity 0.5s var(--ease);
+  }
+
+  .member-card {
+    display: block;
+    color: var(--color-brand-primary);
+    text-decoration: none;
+    /* Grows up and out from its foot, so the LinkedIn line under it never
+       drops toward the row below */
+    transform-origin: 50% 100%;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .member-frame {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    background: var(--color-mist);
+    box-shadow: 0 0 0 1px rgb(10 25 47 / 0.06);
+    transition: box-shadow 0.5s var(--ease);
+  }
+
+  .member-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .member-initials {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    background: var(--color-brand-primary);
+    color: var(--color-steel-light);
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .member-text {
+    padding-top: 1rem;
+  }
+
+  .member-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .member-role {
+    margin-top: 0.375rem;
+    color: var(--color-steel);
+    font-size: 0.6875rem;
+    font-weight: 900;
+    line-height: 1.5;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .member-linkedin {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-bottom: 0.125rem;
+    border-bottom: 2px solid var(--color-steel-light);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition:
+      opacity 0.4s var(--ease),
+      transform 0.4s var(--ease),
+      border-color 0.25s var(--ease);
+  }
+
+  .member-linkedin svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    fill: currentColor;
+  }
+
+  /* Directors: the same card, a size down */
+  .member[data-size='sm'] .member-text {
+    padding-top: 0.75rem;
+  }
+
+  .member[data-size='sm'] .member-name {
+    font-size: 1rem;
+  }
+
+  .member[data-size='sm'] .member-role {
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+  }
+
+  .member[data-size='sm'] .member-linkedin {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  /* Focus on one person: they come forward a little, the rest of their
+     group eases back, and their LinkedIn rises under the name */
+  .member:is(:hover, :focus-within) {
+    z-index: 1;
+  }
+
+  .member:is(:hover, :focus-within) .member-frame {
+    box-shadow:
+      0 0 0 1px rgb(10 25 47 / 0.06),
+      0 22px 44px -22px rgb(10 25 47 / 0.55);
+  }
+
+  a.member-card:hover .member-linkedin {
+    border-color: var(--color-brand-primary);
+  }
+
+  .member-card:focus-visible {
+    outline: none;
+  }
+
+  .member-card:focus-visible .member-frame {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 4px;
+  }
+
+  :global(.team-group):has(.member:is(:hover, :focus-within)) .member:not(:hover, :focus-within) {
+    opacity: 0.8;
+  }
+
+  /* With a mouse the line takes no room until it's wanted: it rises into
+     the gap under the role, so the board stays as compact as the screen needs */
+  @media (hover: hover) and (pointer: fine) {
+    .member-text {
+      position: relative;
+    }
+
+    .member-linkedin {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 0.375rem;
+      opacity: 0;
+      transform: translateY(0.375rem);
+    }
+
+    .member[data-size='sm'] .member-linkedin {
+      margin-top: 0.375rem;
+    }
+
+    .member:is(:hover, :focus-within) .member-linkedin {
+      opacity: 1;
+      transform: none;
+    }
+
+    .member:is(:hover, :focus-within) .member-card {
+      transform: scale(1.035);
+    }
+  }
+
+  /* Keyboard focus always shows the link, whatever the pointer */
+  .member:focus-within .member-linkedin {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .member,
+    .member-card,
+    .member-frame,
+    .member-linkedin {
+      transition: none;
+    }
+
+    .member:is(:hover, :focus-within) .member-card {
+      transform: none;
+    }
+  }
+</style>
