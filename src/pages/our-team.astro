@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import PageFrame from '../components/PageFrame.astro';
 import TeamMemberCard from '../components/TeamMemberCard.astro';
 import { getTeamMembers, getTeamYears, type TeamMember } from '../utils/sanity';
 import { directorGroups, executiveRows } from '../utils/team';
@@ -34,8 +35,8 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
     draw the F of the logo: the page's controls sit in its stem, and the
     executive is set into the white sheet it frames.
   -->
-  <section class="sheet team" data-tone="navy">
-    <header class="team-rail">
+  <PageFrame class="team">
+    <header class="team-rail" slot="rail">
       <div class="team-intro">
         <h1 class="team-title">Our team</h1>
       </div>
@@ -77,8 +78,7 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
       </a>
     </header>
 
-    <div class="team-board">
-      <h2 class="sr-only">Executive</h2>
+    <h2 class="sr-only">Executive</h2>
       {rows.length > 0 ? (
         <div class="team-seats team-group">
           {rows.map((row, i) => (
@@ -92,8 +92,7 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
       ) : (
         <p class="team-empty">No executive listed for {year} yet.</p>
       )}
-    </div>
-  </section>
+  </PageFrame>
 
   <section class="directors" id="directors" aria-labelledby="directors-title" data-open={directorsOpen || undefined}>
     <div class="directors-sheet">
@@ -183,34 +182,15 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
 <style>
   .team {
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
-    --pad: 1rem;
     --gap: clamp(1rem, 2.2vw, 1.75rem);
     --row-gap: 2.5rem;
-    --board-top: 2rem;
-    --board-foot: 2.5rem;
     --per-row: 2;
     --seat-cap: 100%;
-
-    display: grid;
-    grid-template-columns:
-      [full-start] minmax(var(--pad), 1fr)
-      [content-start] minmax(0, calc(80rem - 2 * var(--pad)))
-      [content-end] minmax(var(--pad), 1fr)
-      [full-end];
-    background: var(--color-brand-primary);
-    color: var(--color-brand-secondary);
   }
 
-  .team :global(::selection),
   .directors :global(::selection) {
     background: var(--color-brand-accent);
     color: var(--color-brand-primary);
-  }
-
-  @media (min-width: 640px) {
-    .team {
-      --pad: 1.5rem;
-    }
   }
 
   @media (min-width: 768px) {
@@ -224,7 +204,6 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
      turns down the left as the F's stem. */
 
   .team-rail {
-    grid-column: content;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
@@ -232,7 +211,6 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
       'switch switch';
     align-items: end;
     gap: 1.5rem 1.25rem;
-    padding-block: 1.75rem 2rem;
   }
 
   .team-intro {
@@ -409,21 +387,6 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
 
   /* ---------- The white sheet and the executive ---------- */
 
-  .team-board {
-    grid-column: full;
-    display: grid;
-    grid-template-columns: subgrid;
-    align-content: start;
-    padding-block: var(--board-top) var(--board-foot);
-    border-radius: 0.5rem 0.5rem 0 0;
-    background: var(--color-brand-secondary);
-    color: var(--color-brand-primary);
-  }
-
-  .team-board > * {
-    grid-column: 2;
-  }
-
   .team-seats {
     display: grid;
     gap: var(--row-gap);
@@ -460,35 +423,20 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
 
   @media (min-width: 1024px) {
     .team {
-      --pad: 2rem;
-      --rail: clamp(14rem, 21vw, 18rem);
       /* Room for a LinkedIn line to rise under a role, scaled card and all */
       --row-gap: 3rem;
-      --board-top: clamp(1.5rem, 4svh, 2.75rem);
       /* Name and role under each portrait, the gap between rows, and a
          little air above the fold */
-      --chrome: calc(5rem + var(--board-top) + 2 * 4rem + var(--row-gap) + 1.5rem);
+      --chrome: calc(5rem + var(--frame-top) + 2 * 4rem + var(--row-gap) + 1.5rem);
       /* Two 4:5 rows in what's left of the screen */
       --seat-cap: max(8rem, (100svh - var(--chrome)) * 0.4);
-
-      /* The white sheet reaches the foot of the screen however tall it is */
-      min-height: calc(100svh - 5rem);
-      grid-template-columns:
-        [full-start] minmax(var(--pad), 1fr)
-        [content-start] var(--rail)
-        [board-start] minmax(0, calc(80rem - 2 * var(--pad) - var(--rail)))
-        [content-end] minmax(var(--pad), 1fr)
-        [full-end];
     }
 
     .team-rail {
-      grid-row: 1;
-      grid-column: content-start / board-start;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: 1.25rem;
-      padding: var(--board-top) 2rem var(--board-foot) 0;
     }
 
     .team-title {
@@ -508,17 +456,6 @@ const others = [...years].sort((a, b) => a - b).filter((y) => y !== year);
 
     .years-option a {
       margin-left: -0.375rem;
-    }
-
-    .team-board {
-      grid-row: 1;
-      grid-column: board-start / full-end;
-      border-radius: 0.5rem 0 0 0.5rem;
-    }
-
-    .team-board > * {
-      grid-column: 1;
-      padding-left: clamp(1.5rem, 3vw, 2.5rem);
     }
   }
 

@@ -1,178 +1,300 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getSponsors, urlFor } from '../utils/sanity';
-import { getImage } from 'astro:assets';
-import bgImage from '../assets/sponsors.jpg';
+import { getSponsors } from '../utils/sanity';
+import { partnerLogo } from '../utils/logos';
 
-const optimizedBg = await getImage({ src: bgImage, format: 'webp' });
+interface Sponsor {
+  _id: string;
+  name: string;
+  sponsorTier?: string;
+  logo?: { asset?: { _ref?: string } };
+}
 
-const sponsors = await getSponsors();
-const tiers = ['platinum', 'gold', 'silver', 'bronze'];
+// Highest tier first; a partner without a known tier goes last under "Partners"
+const TIERS = [
+  { key: 'platinum', name: 'Platinum' },
+  { key: 'gold', name: 'Gold' },
+  { key: 'silver', name: 'Silver' },
+  { key: 'bronze', name: 'Bronze' },
+];
 
-const sponsorsByTier = tiers.reduce((acc, tier) => {
-  acc[tier] = sponsors.filter((s: any) => s.sponsorTier === tier);
-  return acc;
-}, {} as Record<string, any[]>);
+const sponsors = (await getSponsors()) as Sponsor[];
 
-const hasSponsors = sponsors.length > 0;
+// Each logo cropped to its drawn mark; sqrt(ratio) gives every logo the same
+// area, and each tier then sets how large that area is
+const withLogos = await Promise.all(
+  sponsors.map(async (sponsor) => {
+    const image = await partnerLogo(sponsor.logo);
+    return { ...sponsor, image, root: image ? Math.sqrt(image.width / image.height) : 1 };
+  }),
+);
+
+const known = new Set(TIERS.map((t) => t.key));
+const tiers = [...TIERS, { key: 'other', name: 'Partners' }]
+  .map((tier, step) => ({
+    ...tier,
+    step,
+    partners: withLogos
+      .filter((p) => (tier.key === 'other' ? !known.has(p.sponsorTier ?? '') : p.sponsorTier === tier.key))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  }))
+  .filter((tier) => tier.partners.length > 0)
+  // Shown tiers step down in size from the top, whichever tiers exist
+  .map((tier, index) => ({ ...tier, scale: Math.max(0.6, 1 - index * 0.2) }));
+
+const sponsorshipsEmail = 'sponsorships@unswfinsoc.org';
 ---
 
-<Layout title="Affiliations | FINSOC" mainClass="bg-transparent">
-  <!-- Parallax Background Image -->
-  <div class="fixed inset-0 pointer-events-none z-0 opacity-90 blur-[4px] overflow-hidden">
-    <div 
-      id="parallax-bg"
-      class="w-full h-[130vh] bg-cover bg-center bg-repeat transition-transform duration-100 ease-out parallax-optimized"
-      style={`background-image: url('${optimizedBg.src}');`}
-    ></div>
-  </div>
+<Layout title="Affiliations | UNSW FINSOC" navTone="navy" pageClass="bg-brand-primary" mainClass="bg-brand-primary">
+  <!-- A mist sheet tucked under the navy bar, as the home page closes. The
+       partners sit straight on it, one tier to a row, each tier's logos a
+       step smaller than the one above. -->
+  <section class="partners" aria-labelledby="partners-title">
+    <div class="partners-column">
+      <h1 class="partners-title" id="partners-title">Our partners</h1>
 
-  <section class="pt-40 pb-32 relative overflow-hidden z-10">
-    <!-- Background Decor -->
-    <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:64px_64px] -z-10"></div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex flex-col md:flex-row justify-between items-end gap-12 mb-32">
-        <div class="max-w-2xl text-left">
-          <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-6 uppercase" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">OUR PARTNERS</h2>
-          <h1 class="text-6xl md:text-8xl font-black text-brand-primary tracking-tight leading-[0.9]" >
-            <span class="text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">VALUED AFFILIATIONS.</span>
-          </h1>
-        </div>
-      </div>
-
-      {hasSponsors ? (
-        <div class="space-y-32">
-          {tiers.map((tier) => sponsorsByTier[tier]?.length > 0 && (
-            <div class="tier-section">
-              <div class="flex items-center gap-6 mb-16">
-                <h2 class="text-4xl font-black text-brand-primary uppercase tracking-tight">
-                   <span class="text-white" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">{tier} PARTNERS.</span>
-                </h2>
-                <div class="h-px bg-white flex-grow mt-2"></div>
-              </div>
-              
-              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
-                {sponsorsByTier[tier].map((sponsor: any) => (
-                  <div class="group bg-white p-8 rounded-[0.5rem] shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex items-center justify-center min-h-[160px] relative overflow-hidden">
-                    <div class="absolute inset-0 bg-brand-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    {sponsor.logo ? (
+      {tiers.length > 0 ? (
+        <div class="tiers">
+          {tiers.map((tier) => (
+            <section class="tier" aria-labelledby={`tier-${tier.key}`} style={`--scale: ${tier.scale}`}>
+              <h2 class="tier-name" id={`tier-${tier.key}`}>{tier.name}</h2>
+              <ul class="tier-logos" role="list">
+                {tier.partners.map((partner) => (
+                  <li class="tier-logo">
+                    {partner.image ? (
                       <img
-                        src={urlFor(sponsor.logo).width(400).url()}
-                        alt={sponsor.name}
-                        class="max-h-16 md:max-h-20 w-auto object-contain transition-all duration-500 relative z-10"
+                        src={partner.image.src}
+                        srcset={partner.image.srcset}
+                        sizes="(min-width: 1024px) 16rem, 40vw"
+                        width={partner.image.width}
+                        height={partner.image.height}
+                        alt={partner.name}
+                        style={`--root: ${partner.root.toFixed(3)}`}
+                        loading="eager"
+                        decoding="async"
                       />
                     ) : (
-                      <span class="text-2xl font-black text-brand-primary relative z-10">{sponsor.name}</span>
+                      <span class="tier-logo-name">{partner.name}</span>
                     )}
-                  </div>
+                  </li>
                 ))}
-              </div>
-            </div>
+              </ul>
+            </section>
           ))}
         </div>
       ) : (
-        <div class="text-center py-32 bg-white rounded-[0.5rem] border-4 border-dashed border-gray-100">
-          <p class="text-gray-400 font-bold uppercase tracking-widest">Our partners for this year are being finalized.</p>
-        </div>
+        <p class="partners-empty">Our partners for this year are being finalised.</p>
       )}
-    </div>
-  </section>
 
-  <!-- Contact / Call to Action -->
-  <section class="py-32 relative overflow-hidden z-10">
-    <div class="absolute inset-0  -z-10"></div>
-    <div class="absolute top-0 right-0 w-1/3 h-full bg-brand-accent/10 skew-x-12 translate-x-1/2"></div>
-    
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <h2 class="text-brand-accent font-black tracking-[0.2em] text-sm mb-6 uppercase" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">PARTNER WITH US</h2>
-          <h3 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-8" style="text-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">
-            WANT TO <span class="text-brand-accent">CONNECT</span> WITH TOP TALENT?
-          </h3>
-          <div class="flex flex-wrap gap-4" style="shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.8);">
-            <a 
-              href="mailto:sponsorships@unswfinsoc.org" 
-              class="bg-brand-accent text-brand-primary px-8 py-4 rounded-[0.5rem] font-black text-lg hover:bg-white transition-all shadow-lg active:scale-95 flex items-center gap-3"
-            >
-              Contact Sponsorships
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </a>
-          </div>
-        </div>
-        
-        <div class="relative group">
-          <div class="absolute -inset-4 bg-brand-accent/20 rounded-[0.5rem] blur-2xl group-hover:bg-brand-accent/30 transition-all duration-700"></div>
-          <div class="relative bg-white/5 backdrop-blur-xl border border-white/10 p-12 rounded-[0.5rem]">
-            <div class="space-y-8">
-              <div class="flex items-start gap-6">
-                <div class="w-12 h-12 bg-brand-accent rounded-[0.5rem] flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="text-white font-black text-xl mb-2">5,000+ Members</h4>
-                  <p class="text-brand-primary font-medium">Connect with a diverse pool of students across UNSW faculties.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-6">
-                <div class="w-12 h-12 bg-brand-accent rounded-[0.5rem] flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="text-white font-black text-xl mb-2">10+ Events Annually</h4>
-                  <p class="text-brand-primary font-medium">From corporate networking to technical workshops and social galas.</p>
-                </div>
-              </div>
-              <div class="flex items-start gap-6">
-                <div class="w-12 h-12 bg-brand-accent rounded-[0.5rem] flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 class="text-white font-black text-xl mb-2">Industry Integration</h4>
-                  <p class="text-brand-primary font-medium">Direct line to future leaders in Investment Banking, PE, and Quant.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="partners-ask">
+        <p class="partners-line">Interested in partnering with FINSOC? Email our sponsorships team.</p>
+        <a class="partners-button" href={`mailto:${sponsorshipsEmail}`}>
+          Email sponsorships
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 6.75A1.75 1.75 0 0 1 4.75 5h14.5A1.75 1.75 0 0 1 21 6.75v10.5A1.75 1.75 0 0 1 19.25 19H4.75A1.75 1.75 0 0 1 3 17.25V6.75Z" />
+            <path d="m3.5 6.5 8.5 6.25 8.5-6.25" />
+          </svg>
+        </a>
       </div>
     </div>
   </section>
 </Layout>
 
-<script is:inline>
-  function initParallax() {
-    const parallaxBg = document.getElementById('parallax-bg');
-    if (!parallaxBg) return;
+<style>
+  .partners {
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --pad: 1rem;
+    /* The area every logo gets in the top tier: a square of this side */
+    --unit: 5.5rem;
+    --rule: rgb(10 25 47 / 0.12);
 
-    let ticking = false;
-    let scrollY = 0;
-
-    function updateParallax() {
-      // Scroll speed: 0.05x the page scroll speed
-      parallaxBg.style.transform = `translate3d(0, ${scrollY * -0.05}px, 0)`;
-      ticking = false;
-    }
-
-    window.addEventListener('scroll', () => {
-      scrollY = window.scrollY;
-      if (!ticking) {
-        window.requestAnimationFrame(updateParallax);
-        ticking = true;
-      }
-    }, { passive: true });
+    min-height: calc(100svh - 5rem);
+    padding: clamp(2rem, 5svh, 3.5rem) var(--pad) clamp(3.5rem, 8svh, 6rem);
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: var(--color-mist);
+    color: var(--color-brand-primary);
   }
 
-  // Run on load and after swaps
-  initParallax();
-  document.addEventListener('astro:page-load', initParallax);
-</script>
+  .partners :global(::selection) {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+  }
+
+  .partners :focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 3px;
+  }
+
+  @media (min-width: 640px) {
+    .partners {
+      --pad: 1.5rem;
+      --unit: 6.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .partners {
+      --pad: 2rem;
+      /* Grows with the screen's height so the tiers keep to the first screen */
+      --unit: clamp(6.5rem, 14svh, 10rem);
+    }
+  }
+
+  .partners-column {
+    max-width: calc(80rem - 2 * var(--pad));
+    margin-inline: auto;
+  }
+
+  .partners-title {
+    margin-bottom: clamp(1.5rem, 4svh, 2.5rem);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  /* ---------- Tiers: one row each, the name on the left, logos across ---------- */
+
+  .tier {
+    display: grid;
+    gap: 1.25rem 2rem;
+    padding-block: clamp(1.25rem, 3svh, 2rem);
+    border-top: 1px solid var(--rule);
+  }
+
+  @media (min-width: 768px) {
+    .tier {
+      grid-template-columns: 10rem minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  .tier-name {
+    font-size: 1.125rem;
+    font-weight: 900;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .tier-logos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--unit) * var(--scale) * 0.5) calc(var(--unit) * var(--scale) * 0.75);
+  }
+
+  .tier-logo {
+    display: flex;
+    flex: none;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  /* Equal area within a tier: width = side x sqrt(ratio), so height = side /
+     sqrt(ratio). A very long wordmark stops at 2.2 sides wide. */
+  .tier-logo img {
+    width: calc(var(--unit) * var(--scale) * min(var(--root), 2.2));
+    max-width: 100%;
+    height: auto;
+    /* White-ground logo files drop their ground and sit straight on the mist */
+    mix-blend-mode: multiply;
+  }
+
+  .tier-logo-name {
+    font-size: calc(1.5rem * var(--scale));
+    font-weight: 900;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  .partners-empty {
+    padding: 4rem 1.5rem;
+    border: 2px dashed rgb(85 117 144 / 0.3);
+    border-radius: 0.5rem;
+    color: var(--color-steel);
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* ---------- The ask: under the last tier's rule ---------- */
+
+  .partners-ask {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.75rem;
+    padding-top: clamp(1.25rem, 3svh, 2rem);
+    border-top: 1px solid var(--rule);
+  }
+
+  .partners-line {
+    max-width: 24rem;
+    color: rgb(10 25 47 / 0.8);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  @media (min-width: 768px) {
+    .partners-ask {
+      display: grid;
+      grid-template-columns: 10rem auto auto;
+      justify-content: start;
+      column-gap: 2rem;
+    }
+
+    /* The line starts where the logos do */
+    .partners-line {
+      grid-column: 2;
+      max-width: none;
+    }
+  }
+
+  .partners-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.5rem;
+    padding: 0 2rem;
+    border-radius: 0.5rem;
+    background: var(--color-brand-primary);
+    color: var(--color-brand-secondary);
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition:
+      background-color 0.3s var(--ease),
+      color 0.3s var(--ease);
+  }
+
+  .partners-button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .partners-button:hover {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .partners-button {
+      transition: none;
+    }
+  }
+</style>

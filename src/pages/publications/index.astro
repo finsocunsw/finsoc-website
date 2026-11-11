@@ -3,10 +3,12 @@ import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import { getPublications, urlFor } from '../../utils/sanity';
 
+const PAGE_SIZE = 3;
+
 const publications = await getPublications();
 
 // Sort publications by date descending
-const sortedPublications = publications.sort((a: any, b: any) => 
+const sortedPublications = publications.sort((a: any, b: any) =>
   new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
 );
 
@@ -20,18 +22,30 @@ const formatDate = (date: string) => {
     year: 'numeric'
   });
 };
+
+// Entries past the first page are rendered with `hidden` so the first page
+// is fully visible in the HTML on load, before any script runs.
+const archiveEntries = remainingPubs.map((pub: any, i: number) => ({
+  href: `/publications/${pub.slug.current}`,
+  title: pub.title as string,
+  excerpt: (pub.excerpt ?? '') as string,
+  date: pub.publishedAt as string,
+  dateLabel: formatDate(pub.publishedAt),
+  searchText: `${pub.title ?? ''} ${pub.excerpt ?? ''}`.toLowerCase(),
+  initiallyHidden: i >= PAGE_SIZE,
+}));
 ---
 
 <Layout title="Publications | UNSW FINSOC">
-  <main class="pt-12 pb-24 afr-theme">
+  <main class="pt-6 pb-24 afr-theme">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
 
       <!-- AFR Style Masthead for Section -->
-      <div class="border-t-4 border-b border-afr-black py-8 mb-12 text-center">
+      <div class="border-t-4 border-b border-afr-black py-5 mb-8 text-center">
         <div class="flex flex-col items-center justify-center space-y-2">
           <span class="font-sans text-[10px] font-black tracking-[0.3em] uppercase text-afr-red">The Archive</span>
-          <h1 class="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none font-serif">FINSOC REVIEW</h1>
+          <h1 class="text-5xl md:text-6xl font-black tracking-tighter uppercase leading-none font-serif">FINSOC REVIEW</h1>
           <div class="flex items-center gap-4 font-sans text-[10px] font-bold tracking-widest uppercase border-t border-afr-border pt-2 w-full max-w-md justify-center">
             <span>UNSW Sydney</span>
             <span class="w-1 h-1 bg-afr-red rounded-full"></span>
@@ -42,20 +56,20 @@ const formatDate = (date: string) => {
 
 
       {publications.length > 0 ? (
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+
           <!-- Featured Article (Newspaper Style) -->
           {featuredPub && (
-            <div class="lg:col-span-6 border-b lg:border-b-0 lg:border-r border-afr-border pb-12 lg:pb-0 lg:pr-12">
-              <a href={`/publications/${featuredPub.slug.current}`} class="group block">
-                <div class="mb-6 relative overflow-hidden bg-white shadow-sm border border-afr-border">
+            <div class="lg:col-span-8 border-b lg:border-b-0 lg:border-r border-afr-border pb-12 lg:pb-0 lg:pr-10">
+              <a href={`/publications/${featuredPub.slug.current}`} class="group flex flex-col sm:flex-row gap-6">
+                <div class="relative shrink-0 w-full sm:w-[55%] aspect-[4/5] overflow-hidden bg-white shadow-sm border border-afr-border">
                   {featuredPub.slides?.[0] && (
-                    <Image 
-                      src={urlFor(featuredPub.slides[0]).width(1000).url()} 
+                    <Image
+                      src={urlFor(featuredPub.slides[0]).width(1000).url()}
                       alt={featuredPub.title}
                       width={1000}
                       height={1250}
-                      class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                     />
                   )}
                   <div class="absolute top-4 left-4">
@@ -64,17 +78,17 @@ const formatDate = (date: string) => {
                     </span>
                   </div>
                 </div>
-                <div class="space-y-4">
+                <div class="space-y-3 flex-1 min-w-0">
                   <div class="flex items-center gap-3 font-sans text-[10px] font-black uppercase tracking-widest text-afr-red">
                     <span>{formatDate(featuredPub.publishedAt)}</span>
                   </div>
-                  <h2 class="text-4xl md:text-5xl font-black leading-[1.1] group-hover:text-afr-red transition-colors decoration-afr-red/30 group-hover:underline underline-offset-8">
+                  <h2 class="text-3xl md:text-4xl font-black leading-[1.1] line-clamp-5 group-hover:text-afr-red transition-colors decoration-afr-red/30 group-hover:underline underline-offset-8">
                     {featuredPub.title}
                   </h2>
-                  <p class="text-xl md:text-xl text-gray-700 leading-relaxed max-w-2xl font-normal italic">
+                  <p class="text-base md:text-lg text-gray-700 leading-relaxed font-normal italic line-clamp-4">
                     {featuredPub.excerpt}
                   </p>
-                  <div class="pt-4 flex items-center gap-2 font-sans font-black text-xs uppercase tracking-widest group-hover:gap-4 transition-all">
+                  <div class="pt-2 flex items-center gap-2 font-sans font-black text-xs uppercase tracking-widest group-hover:gap-4 transition-all">
                     Read the full report <span class="text-afr-red">→</span>
                   </div>
                 </div>
@@ -83,28 +97,68 @@ const formatDate = (date: string) => {
           )}
 
           <!-- Side Column: Remaining Articles -->
-          <div class="lg:col-span-4 space-y-10">
-            <h3 class="font-sans font-black text-xs uppercase tracking-[0.2em] border-b-2 border-afr-black pb-2 mb-6">Archive Entries</h3>
-            {remainingPubs.map((pub: any) => (
-              <a href={`/publications/${pub.slug.current}`} class="group block border-b border-afr-border pb-8 last:border-0">
-                <div class="space-y-3">
-                  <div class="font-sans text-[9px] font-black uppercase tracking-widest text-afr-red">
-                    {formatDate(pub.publishedAt)}
-                  </div>
-                  <h4 class="text-2xl font-black leading-tight group-hover:text-afr-red transition-colors">
-                    {pub.title}
-                  </h4>
-                  <p class="text-sm text-gray-600 font-sans font-medium line-clamp-3 leading-relaxed">
-                    {pub.excerpt}
-                  </p>
-                </div>
-              </a>
-            ))}
+          <div class="lg:col-span-4 space-y-5" data-archive data-page-size={PAGE_SIZE}>
+            <h3 class="font-sans font-black text-xs uppercase tracking-[0.2em] border-b-2 border-afr-black pb-2 mb-4">Archive Entries</h3>
 
-            {remainingPubs.length === 0 && (
+            {archiveEntries.length > 0 && (
+              <div class="space-y-4">
+                <label for="archive-search" class="sr-only">Search the archive</label>
+                <div class="relative">
+                  <input
+                    id="archive-search"
+                    type="search"
+                    placeholder="Search the archive"
+                    autocomplete="off"
+                    data-archive-search
+                    class="w-full font-sans text-sm border border-afr-border bg-white px-4 py-3 focus:outline-none focus:border-afr-black"
+                  />
+                </div>
+                <p class="font-sans text-[10px] font-bold uppercase tracking-widest text-gray-500" aria-live="polite" data-archive-status></p>
+              </div>
+            )}
+
+            <div class="space-y-4" data-archive-list>
+              {archiveEntries.map((entry: any) => (
+                <a
+                  href={entry.href}
+                  class="group block border-b border-afr-border pb-4 last:border-0"
+                  data-archive-item
+                  data-search={entry.searchText}
+                  hidden={entry.initiallyHidden}
+                >
+                  <div class="space-y-3">
+                    <div class="font-sans text-[9px] font-black uppercase tracking-widest text-afr-red">
+                      {entry.dateLabel}
+                    </div>
+                    <h4 class="text-xl font-black leading-tight line-clamp-2 group-hover:text-afr-red transition-colors">
+                      {entry.title}
+                    </h4>
+                    <p class="text-sm text-gray-600 font-sans font-medium line-clamp-2 leading-relaxed">
+                      {entry.excerpt}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            {archiveEntries.length === 0 && (
               <div class="bg-white/50 p-8 border border-dashed border-afr-border text-center rounded-lg">
                  <p class="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-widest">More issues coming soon</p>
               </div>
+            )}
+
+            <p hidden class="font-sans text-sm text-gray-500 text-center py-8" data-archive-empty>No entries match your search.</p>
+
+            {archiveEntries.length > PAGE_SIZE && (
+              <nav aria-label="Archive pages" class="flex items-center justify-between gap-2 w-full pt-3 border-t border-afr-border" data-archive-pagination>
+                <button type="button" data-archive-prev class="whitespace-nowrap font-sans font-black text-xs uppercase tracking-widest px-3 py-2 border border-afr-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-afr-black hover:text-white transition-colors">
+                  ← Prev
+                </button>
+                <div class="flex items-center gap-1" data-archive-numbers></div>
+                <button type="button" data-archive-next class="whitespace-nowrap font-sans font-black text-xs uppercase tracking-widest px-3 py-2 border border-afr-black disabled:opacity-30 disabled:cursor-not-allowed hover:bg-afr-black hover:text-white transition-colors">
+                  Next →
+                </button>
+              </nav>
             )}
           </div>
         </div>
@@ -116,6 +170,96 @@ const formatDate = (date: string) => {
     </div>
   </main>
 </Layout>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-archive]');
+
+  if (root) {
+    const pageSize = Number(root.dataset.pageSize) || 6;
+    const items = Array.from(root.querySelectorAll<HTMLElement>('[data-archive-item]'));
+    const input = root.querySelector<HTMLInputElement>('[data-archive-search]');
+    const status = root.querySelector<HTMLElement>('[data-archive-status]');
+    const empty = root.querySelector<HTMLElement>('[data-archive-empty]');
+    const pagination = root.querySelector<HTMLElement>('[data-archive-pagination]');
+    const prev = root.querySelector<HTMLButtonElement>('[data-archive-prev]');
+    const next = root.querySelector<HTMLButtonElement>('[data-archive-next]');
+    const numbers = root.querySelector<HTMLElement>('[data-archive-numbers]');
+
+    let page = 1;
+    let matches: HTMLElement[] = items;
+
+    const applyFilter = () => {
+      const q = (input?.value ?? '').trim().toLowerCase();
+      matches = q
+        ? items.filter((el) => (el.dataset.search ?? '').includes(q))
+        : items;
+    };
+
+    const render = () => {
+      const totalPages = Math.max(1, Math.ceil(matches.length / pageSize));
+      page = Math.min(Math.max(1, page), totalPages);
+      const start = (page - 1) * pageSize;
+      const visible = new Set(matches.slice(start, start + pageSize));
+
+      items.forEach((el) => {
+        el.hidden = !visible.has(el);
+      });
+
+      if (empty) empty.hidden = matches.length > 0;
+
+      if (status) {
+        const q = (input?.value ?? '').trim();
+        status.textContent = q
+          ? `${matches.length} result${matches.length === 1 ? '' : 's'}`
+          : '';
+      }
+
+      if (pagination) pagination.hidden = matches.length <= pageSize;
+      if (prev) prev.disabled = page <= 1;
+      if (next) next.disabled = page >= totalPages;
+
+      if (numbers) {
+        numbers.innerHTML = '';
+        for (let p = 1; p <= totalPages; p++) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = String(p);
+          btn.setAttribute('aria-label', `Page ${p}`);
+          if (p === page) btn.setAttribute('aria-current', 'page');
+          btn.className =
+            'font-sans font-black text-xs w-7 h-7 border ' +
+            (p === page
+              ? 'bg-afr-black text-white border-afr-black'
+              : 'border-transparent hover:border-afr-black');
+          btn.addEventListener('click', () => {
+            page = p;
+            render();
+          });
+          numbers.appendChild(btn);
+        }
+      }
+    };
+
+    input?.addEventListener('input', () => {
+      page = 1;
+      applyFilter();
+      render();
+    });
+
+    prev?.addEventListener('click', () => {
+      page -= 1;
+      render();
+    });
+
+    next?.addEventListener('click', () => {
+      page += 1;
+      render();
+    });
+
+    applyFilter();
+    render();
+  }
+</script>
 
 <style is:global>
   h1, h2, h3, h4, h5, h6 {

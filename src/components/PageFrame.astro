@@ -1,0 +1,115 @@
+---
+/**
+ * The navy F: the bar's navy carries on down the left as a rail (a band
+ * under the bar below 1024px), and the page's content sits on a white sheet
+ * set into it. The navbar stays navy over it, so bar, rail and footer read
+ * as one frame. Used by Our Team.
+ *
+ * Slots: `rail` for the title and controls, the default slot for the sheet.
+ * Reads --frame-top and --frame-foot for the sheet's padding (and the rail's,
+ * so their contents line up); pages may override them on .frame.
+ */
+type Props = astroHTML.JSX.HTMLAttributes;
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<section class:list={['sheet', 'frame', className]} data-tone="navy" {...rest}>
+  <div class="frame-rail"><slot name="rail" /></div>
+  <div class="frame-board"><slot /></div>
+</section>
+
+<style>
+  .frame {
+    --pad: 1rem;
+    --frame-top: 2rem;
+    --frame-foot: 2.5rem;
+
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(var(--pad), 1fr)
+      [content-start] minmax(0, calc(80rem - 2 * var(--pad)))
+      [content-end] minmax(var(--pad), 1fr)
+      [full-end];
+    background: var(--color-brand-primary);
+    color: var(--color-brand-secondary);
+  }
+
+  .frame :global(::selection) {
+    background: var(--color-brand-accent);
+    color: var(--color-brand-primary);
+  }
+
+  @media (min-width: 640px) {
+    .frame {
+      --pad: 1.5rem;
+    }
+  }
+
+  .frame-rail {
+    grid-column: content;
+    padding-block: 1.75rem 2rem;
+  }
+
+  .frame-rail :global(:focus-visible) {
+    outline: 2px solid var(--color-brand-secondary);
+    outline-offset: 3px;
+  }
+
+  /* The white sheet: full bleed under the band on phones and tablets */
+  .frame-board {
+    grid-column: full;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-content: start;
+    padding-block: var(--frame-top) var(--frame-foot);
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: var(--color-brand-secondary);
+    color: var(--color-brand-primary);
+  }
+
+  .frame-board > :global(*) {
+    grid-column: 2;
+  }
+
+  /* From 1024px the band turns down the left as the F's stem, and the sheet
+     runs from it to the right edge of the screen, at least a screen tall */
+  @media (min-width: 1024px) {
+    .frame {
+      --pad: 2rem;
+      --rail: clamp(14rem, 21vw, 18rem);
+      --frame-top: clamp(1.5rem, 4svh, 2.75rem);
+
+      min-height: calc(100svh - 5rem);
+      grid-template-columns:
+        [full-start] minmax(var(--pad), 1fr)
+        [content-start] var(--rail)
+        [board-start] minmax(0, calc(80rem - 2 * var(--pad) - var(--rail)))
+        [content-end] minmax(var(--pad), 1fr)
+        [full-end];
+    }
+
+    .frame-rail {
+      grid-row: 1;
+      grid-column: content-start / board-start;
+      display: flex;
+      flex-direction: column;
+      padding: var(--frame-top) 2rem var(--frame-foot) 0;
+    }
+
+    .frame-rail > :global(*) {
+      flex: 1;
+    }
+
+    .frame-board {
+      grid-row: 1;
+      grid-column: board-start / full-end;
+      border-radius: 0.5rem 0 0 0.5rem;
+    }
+
+    .frame-board > :global(*) {
+      grid-column: 1;
+      padding-left: clamp(1.5rem, 3vw, 2.5rem);
+    }
+  }
+</style>
